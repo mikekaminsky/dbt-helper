@@ -1,12 +1,15 @@
+import os
+import oyaml as yaml
+
 from dbt.compilation import Compiler
+from dbt.config import RuntimeConfig
+import dbt.adapters.factory
+
 import dbt.loader
 import dbt.ui
 from dbt.logger import GLOBAL_LOGGER as logger
-from dbt.config import RuntimeConfig
-import dbt.adapters.factory
 from dbt.task.generate import unflatten
-import os
-import oyaml as yaml  # NOTE: New dependency
+
 
 
 class BootstrapTask:

@@ -1,11 +1,12 @@
 from dbt.compilation import Compiler
+from dbt.config import RuntimeConfig
+import dbt.adapters.factory
+from dbt.node_types import NodeType
+
+from dbt.utils import is_enabled as check_is_enabled
 import dbt.loader
 import dbt.ui
-import dbt.adapters.factory
-from dbt.config import RuntimeConfig
 from dbt.logger import GLOBAL_LOGGER as logger
-from dbt.node_types import NodeType
-from dbt.utils import is_enabled as check_is_enabled
 
 
 class CompareTask:

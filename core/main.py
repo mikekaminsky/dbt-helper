@@ -4,7 +4,6 @@ import sys
 import core.bootstrap as bootstrap_task
 import core.compare as compare_task
 
-from collections import namedtuple
 from dbt.config import RuntimeConfig, PROFILES_DIR
 from dbt.compilation import Compiler
 import dbt.adapters.factory
