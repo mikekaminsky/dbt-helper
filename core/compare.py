@@ -64,7 +64,7 @@ class CompareTask:
         if len(problems) == 0:
             logger.info(
                 dbt.ui.printer.green(
-                    "All clear! There are no relations in the checked schemas "
+                    "All clear! There are no relations in the checked schemas in the database"
                     "that are not defined in dbt models."
                 )
             )

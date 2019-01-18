@@ -36,6 +36,12 @@ def parse_args(args):
         Which profile to load. Overrides setting in dbt_project.yml.
         """
     )
+    base_subparser.add_argument(
+        '--target',
+        default=None,
+        type=str,
+        help='Which target to load for the given profile'
+    )
 
     subs = p.add_subparsers(title="Available sub-commands", dest="command")
 
@@ -91,11 +97,6 @@ def main(args=None):
     if parsed.command == 'compare':
         task = compare_task.CompareTask(parsed)
         task.run()
-
-    config = RuntimeConfig.from_args(parsed)
-    compiler = Compiler(config)
-    adapter = dbt.adapters.factory.get_adapter(config)
-    print("Do something here!")
 
 if __name__ == "__main__":
     main()
