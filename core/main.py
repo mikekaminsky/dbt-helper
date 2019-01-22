@@ -9,7 +9,6 @@ from dbt.compilation import Compiler
 import dbt.adapters.factory
 
 
-
 def parse_args(args):
 
     p = argparse.ArgumentParser(
@@ -21,26 +20,28 @@ def parse_args(args):
 
     base_subparser = argparse.ArgumentParser(add_help=False)
     base_subparser.add_argument(
-        '--profiles-dir',
+        "--profiles-dir",
         default=PROFILES_DIR,
         type=str,
         help="""
         Which directory to look in for the profiles.yml file. Default = {}
-        """.format(PROFILES_DIR)
+        """.format(
+            PROFILES_DIR
+        ),
     )
     base_subparser.add_argument(
-        '--profile',
+        "--profile",
         required=False,
         type=str,
         help="""
         Which profile to load. Overrides setting in dbt_project.yml.
-        """
+        """,
     )
     base_subparser.add_argument(
-        '--target',
+        "--target",
         default=None,
         type=str,
-        help='Which target to load for the given profile'
+        help="Which target to load for the given profile",
     )
 
     subs = p.add_subparsers(title="Available sub-commands", dest="command")
@@ -84,19 +85,21 @@ def parse_args(args):
     parsed = p.parse_args()
     return parsed
 
+
 def main(args=None):
     if args is None:
         args = sys.argv[1:]
 
     parsed = parse_args(args)
 
-    if parsed.command == 'bootstrap':
+    if parsed.command == "bootstrap":
         task = bootstrap_task.BootstrapTask(parsed)
         task.run()
 
-    if parsed.command == 'compare':
+    if parsed.command == "compare":
         task = compare_task.CompareTask(parsed)
         task.run()
+
 
 if __name__ == "__main__":
     main()
