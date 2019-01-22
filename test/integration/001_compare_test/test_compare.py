@@ -17,15 +17,14 @@ class CompareTest(DBTIntegrationTest):
         with open(file_path, "w") as f:
             f.write(model)
 
+    def get_created_models(self):
+        relations = self.adapter.list_relations_without_caching(
+                self.unique_schema()
+                )
+        created_models = [rel.table.lower() for rel in relations]
+        return created_models
+
     def compare_switch_to_ephemeral(self):
-        # print(self.models_path)
-        # x = subprocess.Popen(
-            # "dbt --help", shell=True, stdout=subprocess.PIPE
-        # )
-        # lgz = x.stdout.read()
-        # x.stdout.close()
-        # print(lgz.decode("UTF-8"))
-        # print("HOWDY")
 
         # Run dbt with test_view as a view
         self.create_model("view")
@@ -34,7 +33,6 @@ class CompareTest(DBTIntegrationTest):
 
         # Assert the view exists in the database
         # created_models = self.get_created_models()
-
         # self.assertTrue("test_view" in created_models)
         # self.assertTrue("downstream" in created_models)
 

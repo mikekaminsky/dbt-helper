@@ -82,14 +82,10 @@ def parse_args(args):
         help="Print generated yml to console. Don't attempt to create schema.yml files.",
     )
 
-    parsed = p.parse_args()
+    parsed = p.parse_args(args)
     return parsed
 
-
-def main(args=None):
-    if args is None:
-        args = sys.argv[1:]
-
+def handle(args):
     parsed = parse_args(args)
 
     if parsed.command == "bootstrap":
@@ -99,6 +95,11 @@ def main(args=None):
     if parsed.command == "compare":
         task = compare_task.CompareTask(parsed)
         task.run()
+
+
+def main(args=None):
+    if args is None:
+        args = sys.argv[1:]
 
 
 if __name__ == "__main__":

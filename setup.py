@@ -20,5 +20,5 @@ setup(
     test_suite="test",
     entry_points={"console_scripts": ["mkdbt = core.main:main"]},
     scripts=[],
-    install_requires=["dbt", "oyaml"],
+    install_requires=["dbt"],
 )

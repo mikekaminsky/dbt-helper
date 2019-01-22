@@ -27,7 +27,7 @@ class DBTIntegrationTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(DBTIntegrationTest, self).__init__(*args, **kwargs)
 
-        self.test_schema_name = '"$my_test_schema"'
+        self.test_schema_name = "my_test_schema"
 
     def setUp(self):
         self.use_profile()
@@ -35,11 +35,13 @@ class DBTIntegrationTest(unittest.TestCase):
         self.load_config()
 
     def tearDown(self):
+
         if os.path.exists("dbt_project.yml"):
             os.remove("dbt_project.yml")
         if os.path.exists("packages.yml"):
             os.remove("packages.yml")
-        self.run_sql("DROP SCHEMA IF EXISTS {} CASCADE" % self.test_schema_name)
+
+        self.run_sql('DROP SCHEMA IF EXISTS "{}" CASCADE'.format(self.test_schema_name))
 
     @property
     def project_config(self):
@@ -68,7 +70,7 @@ class DBTIntegrationTest(unittest.TestCase):
                         "user": "root",
                         "pass": "password",
                         "dbname": "dbt",
-                        "schema": "$test",
+                        "schema": "{}".format(self.test_schema_name),
                     },
                     "noaccess": {
                         "type": "postgres",
@@ -78,7 +80,7 @@ class DBTIntegrationTest(unittest.TestCase):
                         "user": "noaccess",
                         "pass": "password",
                         "dbname": "dbt",
-                        "schema": "$test",
+                        "schema": "{}".format(self.test_schema_name),
                     },
                 },
                 "target": "default2",
@@ -109,10 +111,9 @@ class DBTIntegrationTest(unittest.TestCase):
         config = RuntimeConfig.from_args(TestArgs(kwargs))
 
         adapter = get_adapter(config)
-
         adapter.cleanup_connections()
-        connection = adapter.acquire_connection("__test")
-        self.adapter_type = connection.type
+        self.connection = adapter.acquire_connection("__test")
+        self.adapter_type = self.connection.type
         self.adapter = adapter
         self.config = config
 
@@ -121,11 +122,11 @@ class DBTIntegrationTest(unittest.TestCase):
         if sql.strip() == "":
             return
 
-        conn = self.conn
-        with conn.cursor() as cursor:
+        conn = self.connection
+        with conn.handle.cursor() as cursor:
             try:
                 cursor.execute(sql)
-                conn.commit()
+                conn.handle.commit()
                 if fetch == "one":
                     return cursor.fetchone()
                 elif fetch == "all":
@@ -133,7 +134,7 @@ class DBTIntegrationTest(unittest.TestCase):
                 else:
                     return
             except BaseException as e:
-                conn.rollback()
+                conn.handle.rollback()
                 print(sql)
                 print(e)
                 raise e

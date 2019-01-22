@@ -1,5 +1,5 @@
 import os
-import oyaml as yaml
+import yaml
 
 from dbt.compilation import Compiler
 from dbt.config import RuntimeConfig
@@ -9,7 +9,6 @@ import dbt.loader
 import dbt.ui
 from dbt.logger import GLOBAL_LOGGER as logger
 from dbt.task.generate import unflatten
-
 
 
 class BootstrapTask:
@@ -107,7 +106,7 @@ class BootstrapTask:
             return {}
 
         for schema, relations in relations_to_design.items():
-            schema_path = os.path.join("models", schema)
+            schema_path = os.path.join(self.config.source_paths[0], schema)
             if print_only:
                 pass
             elif os.path.isdir(schema_path):
