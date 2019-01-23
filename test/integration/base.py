@@ -8,18 +8,14 @@ import sys
 import os
 import yaml
 
-DBT_CONFIG_DIR = os.path.abspath(
-    os.path.expanduser(os.environ.get("DBT_CONFIG_DIR", "/home/dbt_test_user/.dbt"))
-)
-
-DBT_PROFILES = os.path.join(DBT_CONFIG_DIR, "profiles.yml")
+IS_DOCKER = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
 
 
 class TestArgs(object):
     def __init__(self, kwargs):
         self.which = "run"
         self.single_threaded = False
-        self.profiles_dir = DBT_CONFIG_DIR
+        self.profiles_dir = '.'
         self.__dict__.update(kwargs)
 
 
@@ -28,6 +24,17 @@ class DBTIntegrationTest(unittest.TestCase):
         super(DBTIntegrationTest, self).__init__(*args, **kwargs)
 
         self.test_schema_name = "my_test_schema"
+        if IS_DOCKER:
+            dbt_config_dir = os.path.abspath(
+                os.path.expanduser(
+                    os.environ.get("DBT_CONFIG_DIR", "/home/dbt_test_user/.dbt")
+                )
+            )
+        else:
+            dbt_config_dir = "."
+
+        self.dbt_config_dir = dbt_config_dir
+        self.dbt_profile = os.path.join(self.dbt_config_dir, "profiles.yml")
 
     def setUp(self):
         self.use_profile()
@@ -35,11 +42,12 @@ class DBTIntegrationTest(unittest.TestCase):
         self.load_config()
 
     def tearDown(self):
-
         if os.path.exists("dbt_project.yml"):
             os.remove("dbt_project.yml")
         if os.path.exists("packages.yml"):
             os.remove("packages.yml")
+        if os.path.exists("profiles.yml"):
+            os.remove("profiles.yml")
 
         self.run_sql('DROP SCHEMA IF EXISTS "{}" CASCADE'.format(self.test_schema_name))
 
@@ -58,6 +66,12 @@ class DBTIntegrationTest(unittest.TestCase):
         return os.path.join(self.test_path, dirname)
 
     def postgres_profile(self):
+
+        if IS_DOCKER:
+            hostname = "database"
+        else:
+            hostname = "localhost"
+
         return {
             "config": {"send_anonymous_usage_stats": False},
             "test": {
@@ -65,7 +79,7 @@ class DBTIntegrationTest(unittest.TestCase):
                     "default2": {
                         "type": "postgres",
                         "threads": 4,
-                        "host": "database",
+                        "host": "{}".format(hostname),
                         "port": 5432,
                         "user": "root",
                         "pass": "password",
@@ -75,7 +89,7 @@ class DBTIntegrationTest(unittest.TestCase):
                     "noaccess": {
                         "type": "postgres",
                         "threads": 4,
-                        "host": "database",
+                        "host": "{}".format(hostname),
                         "port": 5432,
                         "user": "noaccess",
                         "pass": "password",
@@ -88,15 +102,15 @@ class DBTIntegrationTest(unittest.TestCase):
         }
 
     def use_profile(self):
-        if not os.path.exists(DBT_CONFIG_DIR):
-            os.makedirs(DBT_CONFIG_DIR)
+        if not os.path.exists(self.dbt_config_dir):
+            os.makedirs(self.dbt_config_dir)
 
         profile_config = {}
         default_profile_config = self.postgres_profile()
 
         profile_config.update(default_profile_config)
 
-        with open(DBT_PROFILES, "w") as f:
+        with open(self.dbt_profile, "w") as f:
             yaml.safe_dump(profile_config, f, default_flow_style=True)
 
         self._profile_config = profile_config
@@ -106,7 +120,7 @@ class DBTIntegrationTest(unittest.TestCase):
         # fresh adapter for the tests.
         # it's important to use a different connection handle here so
         # we don't look into an incomplete transaction
-        kwargs = {"profile": None, "profile_dir": DBT_CONFIG_DIR, "target": None}
+        kwargs = {"profile": None, "profiles_dir": self.dbt_config_dir, "target": None}
 
         config = RuntimeConfig.from_args(TestArgs(kwargs))
 

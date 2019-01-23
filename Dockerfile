@@ -8,6 +8,7 @@ RUN pip install pip --upgrade
 RUN pip install virtualenv
 RUN pip install virtualenvwrapper
 RUN pip install tox
+ENV AM_I_IN_A_DOCKER_CONTAINER=True
 
 RUN useradd -mU dbt_test_user
 USER dbt_test_user
