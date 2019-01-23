@@ -7,6 +7,7 @@ import psycopg2
 import sys
 import os
 import yaml
+from core.main import handle
 
 IS_DOCKER = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
 
@@ -15,7 +16,7 @@ class TestArgs(object):
     def __init__(self, kwargs):
         self.which = "run"
         self.single_threaded = False
-        self.profiles_dir = '.'
+        self.profiles_dir = os.getcwd()
         self.__dict__.update(kwargs)
 
 
@@ -31,7 +32,7 @@ class DBTIntegrationTest(unittest.TestCase):
                 )
             )
         else:
-            dbt_config_dir = "."
+            dbt_config_dir = os.getcwd()
 
         self.dbt_config_dir = dbt_config_dir
         self.dbt_profile = os.path.join(self.dbt_config_dir, "profiles.yml")
@@ -171,9 +172,20 @@ class DBTIntegrationTest(unittest.TestCase):
         with open("dbt_project.yml", "w") as f:
             yaml.safe_dump(project_config, f, default_flow_style=True)
 
+    def run_mkdbt(self, args):
+
+        if args is None:
+            args = []
+
+        args.extend(["--profiles-dir", self.dbt_config_dir])
+        results = handle(args)
+        return results
+
     def run_dbt(self, args):
 
         if args is None:
             args = ["run"]
+
+        args.extend(["--profiles-dir", self.dbt_config_dir])
 
         res, success = handle_and_check(args)
