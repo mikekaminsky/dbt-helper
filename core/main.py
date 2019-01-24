@@ -85,16 +85,19 @@ def parse_args(args):
     parsed = p.parse_args(args)
     return parsed
 
+
 def handle(args):
     parsed = parse_args(args)
 
     if parsed.command == "bootstrap":
         task = bootstrap_task.BootstrapTask(parsed)
-        task.run()
+        results = task.run()
 
     if parsed.command == "compare":
         task = compare_task.CompareTask(parsed)
-        task.run()
+        results = task.run()
+
+    return results
 
 
 def main(args=None):
