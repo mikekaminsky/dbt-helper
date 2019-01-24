@@ -82,12 +82,18 @@ def parse_args(args):
         help="Print generated yml to console. Don't attempt to create schema.yml files.",
     )
 
+    if len(args) == 0:
+        p.print_help()
+        sys.exit(1)
+        return
+
     parsed = p.parse_args(args)
     return parsed
 
 
 def handle(args):
     parsed = parse_args(args)
+    results = None
 
     if parsed.command == "bootstrap":
         task = bootstrap_task.BootstrapTask(parsed)
@@ -103,6 +109,8 @@ def handle(args):
 def main(args=None):
     if args is None:
         args = sys.argv[1:]
+
+    handle(args)
 
 
 if __name__ == "__main__":
