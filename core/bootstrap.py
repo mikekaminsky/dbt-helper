@@ -1,5 +1,4 @@
 import os
-import yaml
 
 from dbt.compilation import Compiler
 from dbt.config import RuntimeConfig
@@ -9,6 +8,23 @@ import dbt.loader
 import dbt.ui
 from dbt.logger import GLOBAL_LOGGER as logger
 from dbt.task.generate import unflatten
+from jinja2 import Template
+
+
+SCHEMA_YML_TEMPLATE = Template(
+"""
+version: 2
+models:
+{% for model_dict in models %}
+  - name: {{model_dict['name']}}
+    description: 'TODO: Replace me'
+    columns:
+    {% for col in model_dict['columns'] -%}
+    - name: {{col['name']}}
+    {% endfor %}
+    {% endfor %}
+"""
+)
 
 
 class BootstrapTask:
@@ -25,15 +41,10 @@ class BootstrapTask:
         manifest = dbt.loader.GraphLoader.load_all(self.config, all_projects)
         return manifest
 
-    def _convert_single_relation_dict_to_yml(self, relation_dict):
-        to_yaml = {}
-        to_yaml["version"] = 2
-        to_yaml["models"] = relation_dict
-        # NOTE: Do we want to increase the indentation?
-        # https://stackoverflow.com/questions/25108581/python-yaml-dump-bad-indentation
-        return yaml.dump(to_yaml, default_flow_style=False)
+    def render_relations(self, models):
+        return SCHEMA_YML_TEMPLATE.render(models=models)
 
-    def write_relation(self, design_file_path, relation_dict):
+    def write_relation(self, design_file_path, yml):
         if os.path.isfile(design_file_path):
             logger.info(
                 dbt.ui.printer.yellow(
@@ -43,13 +54,10 @@ class BootstrapTask:
             return
 
         logger.info("Creating design file: {}".format(design_file_path))
-
-        yml = self._convert_single_relation_dict_to_yml(relation_dict)
         with open(design_file_path, "w") as f:
             f.write(yml)
 
-    def print_relation(self, relation_dict):
-        yml = self._convert_single_relation_dict_to_yml(relation_dict)
+    def print_relation(self, yml):
         logger.info(yml)
 
     def prep_metadata(self, meta_dict):
@@ -133,22 +141,27 @@ class BootstrapTask:
                             "Design for relation: {}.{}".format(schema, relation)
                         )
                         logger.info("-" * 20)
-                        self.print_relation([relation_dict])
+                        yml = self.render_relations([relation_dict])
+                        self.print_relation(yml)
                     else:
                         design_file_name = "{}.yml".format(relation)
                         design_file_path = os.path.join(schema_path, design_file_name)
-                        self.write_relation(design_file_path, [relation_dict])
+                        yml = self.render_relations([relation_dict])
+                        self.write_relation(design_file_path, yml)
 
             if single_file:
                 if print_only:
                     logger.info("-" * 20)
                     logger.info("Design for schmea: {}".format(schema))
                     logger.info("-" * 20)
-                    self.print_relation(all_models)
+                    yml = self.render_relations(all_models)
+                    self.print_relation(yml)
+
                 else:
                     design_file_name = "{}.yml".format(schema)
                     design_file_path = os.path.join(schema_path, design_file_name)
-                    self.write_relation(design_file_path, all_models)
+                    yml = self.render_relations([all_models])
+                    self.write_relation(design_file_path, yml)
 
         return all_models
 

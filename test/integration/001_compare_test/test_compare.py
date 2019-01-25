@@ -1,4 +1,3 @@
-import subprocess
 from test.integration.base import DBTIntegrationTest
 import os
 
@@ -47,7 +46,7 @@ class CompareTest(DBTIntegrationTest):
         self.assertTrue(self.check_relation_exists("downstream"))
 
         # Assert dbt compare passes
-        results = self.run_mkdbt(["compare"])
+        results = self.run_dbthelper(["compare"])
         self.assertTrue(len(results) == 0)
 
         # Run dbt with test_view as ephemeral
@@ -57,7 +56,7 @@ class CompareTest(DBTIntegrationTest):
         self.assertTrue(self.check_relation_exists("test_view"))
         self.assertTrue(self.check_relation_exists("downstream"))
         # Assert dbt compare fails
-        results = self.run_mkdbt(["compare"])
+        results = self.run_dbthelper(["compare"])
         self.assertTrue(len(results) == 1)
 
     def test__postgres__compare(self):

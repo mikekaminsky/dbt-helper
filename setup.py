@@ -1,9 +1,9 @@
 from setuptools import find_packages, setup
 
 
-package_name = "mkdbt"
+package_name = "dbt-helper"
 package_version = "0.0.1"
-description = """mkdbt is a command line tool to help ease dbt development and \
+description = """dbt-helper is a command line tool to help ease dbt development and \
         database management"""
 
 
@@ -14,11 +14,11 @@ setup(
     long_description_content_type=description,
     author="Michael Kaminsky",
     author_email="michael@kaminsky.rocks",
-    url="https://github.com/mikekaminsky/mkdbt",
+    url="https://github.com/mikekaminsky/dbt-helper",
     packages=find_packages(),
     package_data={},
     test_suite="test",
-    entry_points={"console_scripts": ["mkdbt = core.main:main"]},
+    entry_points={"console_scripts": ["dbt-helper = core.main:main"]},
     scripts=[],
     install_requires=["dbt"],
 )

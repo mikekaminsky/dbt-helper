@@ -2,8 +2,6 @@ import unittest
 from dbt.adapters.factory import get_adapter
 from dbt.config import RuntimeConfig
 from dbt.main import handle_and_check
-import dbt.main as dbt
-import psycopg2
 import sys
 import os
 import yaml
@@ -172,7 +170,7 @@ class DBTIntegrationTest(unittest.TestCase):
         with open("dbt_project.yml", "w") as f:
             yaml.safe_dump(project_config, f, default_flow_style=True)
 
-    def run_mkdbt(self, args):
+    def run_dbthelper(self, args):
 
         if args is None:
             args = []

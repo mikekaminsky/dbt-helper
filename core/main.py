@@ -4,15 +4,13 @@ import sys
 import core.bootstrap as bootstrap_task
 import core.compare as compare_task
 
-from dbt.config import RuntimeConfig, PROFILES_DIR
-from dbt.compilation import Compiler
-import dbt.adapters.factory
+from dbt.config import PROFILES_DIR
 
 
 def parse_args(args):
 
     p = argparse.ArgumentParser(
-        prog="mkdbt: additional tools for wokring with DBT",
+        prog="dbt-helper: additional tools for wokring with DBT",
         formatter_class=argparse.RawTextHelpFormatter,
         description="Additional CLI tools for faster DBT development and database management",
         epilog="Select one of these sub-commands and you can find more help from there.",

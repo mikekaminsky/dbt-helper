@@ -16,7 +16,7 @@ class TestBootstrap(DBTIntegrationTest):
 
     def test_bootstrap_completeness(self):
         self.run_dbt(["run"])
-        results = self.run_mkdbt(["bootstrap", "--schemas", self.test_schema_name])
+        self.run_dbthelper(["bootstrap", "--schemas", self.test_schema_name])
 
         self.assertTrue(
             os.path.isfile(
