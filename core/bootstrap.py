@@ -12,7 +12,7 @@ from jinja2 import Template
 
 
 SCHEMA_YML_TEMPLATE = Template(
-"""
+    """
 version: 2
 models:
 {% for model_dict in models %}
