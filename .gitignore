@@ -4,4 +4,6 @@
 .tox/*
 logs/
 target/
+build/
+dist/
 dbt_project.yml

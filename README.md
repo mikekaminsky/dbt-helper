@@ -4,6 +4,12 @@
 
 This repository is **not** formally associated with dbt and is not maintained by fishtown-analytics (the maintainers of dbt). If you have problems with one of these tools, please file an issue on this repository and do not bother the dbt maintainers about it.
 
+## Installation
+
+```bash
+pip install dbt-helper
+```
+
 ## Usage
 
 `dbt-helper` (currently) has two sub-commands:
