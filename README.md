@@ -1,4 +1,6 @@
-# `dbt-helper`
+# `dbt-helper` (beta)
+
+NOTE: `dbt-helper` is still in extremely-limited beta release. We'd love your help, testing it though! Until we're out of beta, please don't build this into anything production-testing as it will surely get broken sooner rather than later
 
 `dbt-helper` is a command line tool that helps with developing [`dbt`](https://www.getdbt.com/) codebases and managing data warehouses. 
 
