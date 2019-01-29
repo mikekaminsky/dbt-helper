@@ -117,13 +117,6 @@ class BootstrapTask:
             schema_path = os.path.join(self.config.source_paths[0], schema)
             if not write_files:
                 pass
-            elif os.path.isdir(schema_path):
-                logger.info(
-                    dbt.ui.printer.yellow(
-                        "Warning: Directory {} already exists. \n"
-                        "Proceeding with caution.".format(schema_path)
-                    )
-                )
             else:
                 os.mkdir(schema_path)
 
