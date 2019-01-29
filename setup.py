@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 
 package_name = "dbt-helper"
-package_version = "0.0.1"
+package_version = "0.0.2"
 description = """dbt-helper is a command line tool to help ease dbt development and database management"""
 
 

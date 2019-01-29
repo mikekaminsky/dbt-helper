@@ -14,9 +14,22 @@ class TestBootstrap(DBTIntegrationTest):
     def model_file_path(self, *args):
         return os.path.join(self.models_path, *args)
 
-    def test_bootstrap_completeness(self):
+    def test_bootstrap_doesnt_write(self):
         self.run_dbt(["run"])
         self.run_dbthelper(["bootstrap", "--schemas", self.test_schema_name])
+
+        self.assertFalse(
+            os.path.isfile(
+                self.model_file_path(self.test_schema_name, "downstream.yml")
+            )
+        )
+        self.assertFalse(
+            os.path.isfile(self.model_file_path(self.test_schema_name, "test_view.yml"))
+        )
+
+    def test_bootstrap_write(self):
+        self.run_dbt(["run"])
+        self.run_dbthelper(["bootstrap", "--schemas", self.test_schema_name, "--write-files"])
 
         self.assertTrue(
             os.path.isfile(

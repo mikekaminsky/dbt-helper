@@ -1,10 +1,24 @@
 import argparse
 import sys
+import os
 
 import core.bootstrap as bootstrap_task
 import core.compare as compare_task
 
 from dbt.config import PROFILES_DIR
+
+
+def get_nearest_project_dir():
+    root_path = os.path.abspath(os.sep)
+    cwd = os.getcwd()
+
+    while cwd != root_path:
+        project_file = os.path.join(cwd, "dbt_project.yml")
+        if os.path.exists(project_file):
+            return cwd
+        cwd = os.path.dirname(cwd)
+
+    return None
 
 
 def parse_args(args):
@@ -74,10 +88,10 @@ def parse_args(args):
         help="Store all of the schema information in a single schema.yml file",
     )
     bootstrap_sub.add_argument(
-        "--print-only",
+        "--write-files",
         action="store_true",
-        dest="print_only",
-        help="Print generated yml to console. Don't attempt to create schema.yml files.",
+        dest="write_files",
+        help="Create schema.yml files (will not over-write existing files).",
     )
 
     if len(args) == 0:
@@ -90,6 +104,16 @@ def parse_args(args):
 
 
 def handle(args):
+
+    nearest_project_dir = get_nearest_project_dir()
+    if nearest_project_dir is None:
+        raise Exception(
+            "fatal: Not a dbt project (or any of the parent directories). "
+            "Missing dbt_project.yml file"
+        )
+
+    os.chdir(nearest_project_dir)
+
     parsed = parse_args(args)
     results = None
 
