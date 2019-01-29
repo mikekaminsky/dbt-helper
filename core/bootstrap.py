@@ -117,6 +117,8 @@ class BootstrapTask:
             schema_path = os.path.join(self.config.source_paths[0], schema)
             if not write_files:
                 pass
+            elif os.path.isdir(schema_path):
+                pass
             else:
                 os.mkdir(schema_path)
 
