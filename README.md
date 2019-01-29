@@ -17,7 +17,9 @@ pip install dbt-helper
 `dbt-helper` (currently) has two sub-commands:
 
 * `compare`: Compare the relations in your warehouse with those that dbt is managing. This is useful for identifying `stale` relations that are no longer being updated by dbt (like if, for example, you converted the model from materialized to ephemeral).
+  * Note: `dbt-helper compare` will compare all schemas that are impacted by models in the `models/` directory. There is (currently) no way to specify a single schema to compare.
 * `bootstrap`: Create starter "`schema.yml`" files for your project. This function helpfully generates boilerplate dbt-model files for you so you don't have to go through the copy/paste when you're developing a new model.
+  * Note: this command will not over-write existing `schema.yml` files. It will default to printing templates to the console, but you can create new files by using the `--write-files` flag.
 
 As one might hope, you can view the command line options directly from the tool by using the help functionality:
 
@@ -41,7 +43,7 @@ VIEW "dev_downstream"."d"
 #### `bootstrap`
 
 ```bash
-$ dbt-helper bootstrap --schemas dev_example --print-only
+$ dbt-helper bootstrap --schemas dev_example
 
 Bootstrapping the following schemas:
 - dev_example
@@ -115,3 +117,9 @@ If you want to specify a particular test to run, you can pass in a path to an in
 ```
 tox -e dev -- --nocapture test/integration/001_compare_test/
 ```
+
+## Giving Thanks
+
+* Thanks to [Drew Banin](https://github.com/drewbanin) for invaluable discussion and code-review on early `dbt-helper` features.
+* Thanks to [John Lynch]() for early beta-testing and feedback.
+

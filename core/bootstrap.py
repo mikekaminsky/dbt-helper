@@ -81,7 +81,7 @@ class BootstrapTask:
 
     def run(self):
         single_file = self.args.single_file
-        print_only = self.args.print_only
+        write_files = self.args.write_files
         schemas = self.args.schemas
 
         logger.info("Bootstrapping the following schemas:")
@@ -115,15 +115,8 @@ class BootstrapTask:
 
         for schema, relations in relations_to_design.items():
             schema_path = os.path.join(self.config.source_paths[0], schema)
-            if print_only:
+            if not write_files:
                 pass
-            elif os.path.isdir(schema_path):
-                logger.info(
-                    dbt.ui.printer.yellow(
-                        "Warning: Directory {} already exists. \n"
-                        "Proceeding with caution.".format(schema_path)
-                    )
-                )
             else:
                 os.mkdir(schema_path)
 
@@ -135,7 +128,7 @@ class BootstrapTask:
                 all_models.append(relation_dict)
 
                 if not single_file:
-                    if print_only:
+                    if not write_files:
                         logger.info("-" * 20)
                         logger.info(
                             "Design for relation: {}.{}".format(schema, relation)
@@ -150,7 +143,7 @@ class BootstrapTask:
                         self.write_relation(design_file_path, yml)
 
             if single_file:
-                if print_only:
+                if not write_files:
                     logger.info("-" * 20)
                     logger.info("Design for schmea: {}".format(schema))
                     logger.info("-" * 20)
