@@ -121,5 +121,5 @@ tox -e dev -- --nocapture test/integration/001_compare_test/
 ## Giving Thanks
 
 * Thanks to [Drew Banin](https://github.com/drewbanin) for invaluable discussion and code-review on early `dbt-helper` features.
-* Thanks to [John Lynch]() for early beta-testing and feedback.
+* Thanks to [John Lynch](https://github.com/jplynch77) for early beta-testing and feedback.
 
