@@ -4,9 +4,9 @@
 #
 version: 2
 jobs:
-  unit:
+  build:
     docker: &test_and_postgres
-      - image: michaelkaminsky/latest
+      - image: michaelkaminsky/dbt-helper
       - image: postgres
         name: database
         environment: &pgenv
@@ -23,4 +23,4 @@ jobs:
             PGUSER: root
             PGPASSWORD: password
             PGDATABASE: postgres
-      - run: tox -e pep8,unit-py27,unit-py36
+      - run: tox
