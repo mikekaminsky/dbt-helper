@@ -4,7 +4,7 @@
 #
 version: 2
 jobs:
-  build:
+  run-tests:
     docker: &test_and_postgres
       - image: michaelkaminsky/dbt-helper
       - image: postgres
@@ -24,3 +24,51 @@ jobs:
             PGPASSWORD: password
             PGDATABASE: postgres
       - run: tox
+  build-and-deploy:
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - checkout
+      - run: 
+          name: create packages
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install wheel
+            pip install twine
+            python setup.py verify
+            python setup.py sdist
+            python setup.py bdist_wheel
+      - run: 
+          name: init .pypirc
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = turingmachin" >> ~/.pypirc
+            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+      - run:
+          name: upload to pypi
+          command: |
+            . venv/bin/activate
+            twine upload dist/*
+
+workflows:
+  version: 2
+  untagged-build:
+    jobs:
+      - run-tests
+  build-and-deploy:
+    jobs:
+      - run-tests:
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+      - build-and-deploy:
+          requires:
+            - run-tests
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
