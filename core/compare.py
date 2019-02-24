@@ -52,7 +52,7 @@ class CompareTask:
         model_relations = set()
         for node in manifest.nodes.values():
             node = node.to_dict()
-            is_refable = node["resource_type"] in NodeType.refable()
+            is_refable = node["resource_type"] in NodeType.refable() or node["resource_type"] == 'archive'
             is_enabled = check_is_enabled(node)
             is_ephemeral = node["config"]["materialized"] == "ephemeral"
             if is_refable and is_enabled and not is_ephemeral:
@@ -82,6 +82,8 @@ class CompareTask:
             relation = database_relations_map[relation_id]
             problem_relation_list.append(relation)
             logger.info("{} {}".format(relation.type.upper(), relation))
+            # TODO: Fix this so that it doesn't break when type is None
+            # logger.info("{} {}".format(relation.type, relation))
 
         return problem_relation_list
 

@@ -1,4 +1,3 @@
 
-            {{ config(materialized='ephemeral') }}
-            SELECT 1 AS colname
+            {{ config(materialized='ephemeral') }} SELECT 1 AS colname
             
