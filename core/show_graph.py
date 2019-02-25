@@ -12,8 +12,7 @@ REG_PARENTS = re.compile("(?<=join\s)+[\S\.\"']+|(?<=from\s)+[\S\.\"']+", re.I)
 REG_CTES = re.compile("(\S+)\sas\W*\(", re.I)
 
 # TODO:
-# * Change name to "show dependents"
-# * Add upstream / downstream arguments, make it required
+# * create two CLI subcommands show_upstream and show_downstream
 # * Make sure viz_dict gets updated properly
 # * Integrate into DBT helper
 
@@ -201,25 +200,11 @@ def main():
 
     parent_dict, node_info_dict = get_node_info(csv_infile_path)
 
-    #####
-    focal_set = set(args.node)
 
-    # direction_raw = input(
-    # "Please pick a direction. A for Ancestors, D for Descendants, Leave blank for All: "
-    # )
-    # if direction_raw == "A":
-    # direction = "ancestors"
-    # elif direction_raw == "D":
-    # direction = "descendants"
-    # else:
-    # direction = None
-
+    focal_set = set([args.node])
     direction = None
 
-    #####
-    if focal_set == None:
-        print("calculating DAG for entire ecosystem...")
-    elif direction == None:
+    if direction == None:
         print("calculating DAG for " + str(list(focal_set)))
     else:
         print("calculating DAGs for the " + direction + " of " + list(focal_set))
@@ -240,7 +225,7 @@ def main():
         for pred in G.predecessors(current_node):
             update_viz_dict(G, pred, level + 1)
 
-    update_viz_dict(G, "d")
+    update_viz_dict(G, args.node)
 
     for layer in viz_dict.keys():
         print(" | ".join(viz_dict[layer]).center(80))
