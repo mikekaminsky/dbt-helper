@@ -1,6 +1,5 @@
 import os
 import re
-import csv
 import networkx as nx
 import argparse
 import sys
@@ -13,13 +12,31 @@ REG_PARENTS = re.compile("(?<=join\s)+[\S\.\"']+|(?<=from\s)+[\S\.\"']+", re.I)
 REG_CTES = re.compile("(\S+)\sas\W*\(", re.I)
 
 # TODO:
-# * Use dictionary from create_csv directly rather than reading the csv
 # * Change name to "show dependents"
 # * Add upstream / downstream arguments, make it required
 # * Make sure viz_dict gets updated properly
 # * Integrate into DBT helper
 
 def create_query_dict():
+    sql_files = []
+    for dp, dn, filenames in os.walk('./models'):
+        for fn in filenames:
+            if os.path.splitext(fn)[1] == '.sql':
+                full_path = os.path.join(dp, fn)
+                sql_files.append(full_path)
+
+    query_list = []
+    for sql_file in sql_files:
+        with open(sql_file, 'r') as f:
+            query = f.read()
+        if not query.strip()  == '':
+            d = {}
+            d['name'] = os.path.splitext(os.path.basename(sql_file))[0]
+            d['sql'] = query
+            d['tpe'] = 'view'
+            query_list.append(d)
+
+    return query_list
 
 
 def clean_sql(sql):
@@ -104,37 +121,36 @@ def get_node_set(parent_dict, focal_set=None, direction=None):
 def get_node_info(csv_infile_path):
     node_info_dict = {}  # intended to store direct node type
     parent_dict = {}  # intended to store parent data
-    with open(csv_infile_path) as infile:
-        infile_reader = csv.DictReader(infile)
-        for row in infile_reader:
 
-            # pull data from CSV
-            object_name = row["name"]
-            object_type = row["tpe"]
-            sql = row["sql"]
+    query_dict = create_query_dict()
+    for row in query_dict:
 
-            # clean the sql
-            c_sql = clean_sql(sql)
+        object_name = row["name"]
+        object_type = row["tpe"]
+        sql = row["sql"]
 
-            # get the set of parents
-            parents = get_parents(c_sql)
+        # clean the sql
+        c_sql = clean_sql(sql)
 
-            # get set of ctes to exclude from parents
-            ctes = get_ctes(c_sql)
+        # get the set of parents
+        parents = get_parents(c_sql)
 
-            # remove CTES from parent dict
-            for cte in ctes:
-                parents.discard(cte)
+        # get set of ctes to exclude from parents
+        ctes = get_ctes(c_sql)
 
-            # get rid of brackets in views
-            c_parents = set()
-            for parent in parents:
-                if not parent[:1] == "(":
-                    c_parents.add(REG_BRACKETS.sub("", parent))
+        # remove CTES from parent dict
+        for cte in ctes:
+            parents.discard(cte)
 
-            # add the object name and type and direct parents to the dict
-            node_info_dict[object_name] = object_type
-            parent_dict[object_name] = c_parents
+        # get rid of brackets in views
+        c_parents = set()
+        for parent in parents:
+            if not parent[:1] == "(":
+                c_parents.add(REG_BRACKETS.sub("", parent))
+
+        # add the object name and type and direct parents to the dict
+        node_info_dict[object_name] = object_type
+        parent_dict[object_name] = c_parents
     return (parent_dict, node_info_dict)
 
 
