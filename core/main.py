@@ -4,6 +4,7 @@ import os
 
 import core.bootstrap as bootstrap_task
 import core.compare as compare_task
+import core.show_dependencies as show_dependencies_task
 
 from dbt.config import PROFILES_DIR
 
@@ -94,6 +95,22 @@ def parse_args(args):
         help="Create schema.yml files (will not over-write existing files).",
     )
 
+    upstream_depencies_sub = subs.add_parser(
+        "show_upstream",
+        parents=[base_subparser],
+        help="Show upstream dependencies for a model",
+    )
+    upstream_depencies_sub.set_defaults(cls=show_dependencies_task.ShowDependenciesTask, which="show_upstream")
+    upstream_depencies_sub.add_argument("model_name")
+
+    downstream_depencies_sub = subs.add_parser(
+        "show_downstream",
+        parents=[base_subparser],
+        help="Show downstream dependencies for a model",
+    )
+    downstream_depencies_sub.set_defaults(cls=show_dependencies_task.ShowDependenciesTask, which="show_downstream")
+    downstream_depencies_sub.add_argument("model_name")
+
     if len(args) == 0:
         p.print_help()
         sys.exit(1)
@@ -125,6 +142,10 @@ def handle(args):
         task = compare_task.CompareTask(parsed)
         results = task.run()
 
+    if parsed.command in("show_upstream", "show_downstream"):
+        task = show_dependencies_task.ShowDependenciesTask(parsed)
+        results = task.run(parsed)
+
     return results
 
 
@@ -133,7 +154,3 @@ def main(args=None):
         args = sys.argv[1:]
 
     handle(args)
-
-
-if __name__ == "__main__":
-    main()
