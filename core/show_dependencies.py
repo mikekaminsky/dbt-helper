@@ -11,6 +11,8 @@ REG_BRACKETS = re.compile('\[|\]|\)|"', re.I)
 REG_PARENTS = re.compile("(?<=join\s)+[\S\.\"']+|(?<=from\s)+[\S\.\"']+", re.I)
 REG_CTES = re.compile("(\S+)\sas\W*\(", re.I)
 
+# TODO: consider using DBT to generate the initial parent_dict rather than parsing the SQL
+
 
 class ShowDependenciesTask:
     def __init__(self, args):
@@ -169,7 +171,8 @@ class ShowDependenciesTask:
 
     def display_deps(self, viz_dict):
         rev = self.direction == "downstream"
-        layers = sorted([*viz_dict], reverse=rev)
+        keylist = list(viz_dict.keys())
+        layers = sorted(keylist, reverse=rev)
         print("-" * 80)
         for layer in layers:
             print(" | ".join(viz_dict[layer]).center(80))
@@ -201,7 +204,6 @@ class ShowDependenciesTask:
 
         def update_viz_dict(G, current_node, level=0):
             if len(G.nodes()) == 0:
-                # if len(G.nodes()) == 1:
                 viz_dict[0] = focal_set
                 return
             if level in viz_dict:
@@ -220,5 +222,5 @@ class ShowDependenciesTask:
                     update_viz_dict(G, pred, level + 1)
 
         update_viz_dict(G, self.args.model_name)
-
         self.display_deps(viz_dict)
+        return viz_dict
