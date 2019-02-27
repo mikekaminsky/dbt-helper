@@ -5,8 +5,7 @@ import os
 class CompareTest(DBTIntegrationTest):
     def create_model(self, materialization):
         model = """
-            {{{{ config(materialized='{mat}') }}}}
-            SELECT 1 AS colname
+            {{{{ config(materialized='{mat}') }}}} SELECT 1 AS colname
             """.format(
             mat=materialization
         )
