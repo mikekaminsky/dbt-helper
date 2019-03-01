@@ -4,14 +4,9 @@ import networkx as nx
 import argparse
 import sys
 
-
-REG_BLOCK_COMMENT = re.compile("(/\*)[\w\W]*?(\*/)", re.I)
-REG_LINE_COMMENT = re.compile("(--.*)", re.I)
-REG_BRACKETS = re.compile('\[|\]|\)|"', re.I)
-REG_PARENTS = re.compile("(?<=join\s)+[\S\.\"']+|(?<=from\s)+[\S\.\"']+", re.I)
-REG_CTES = re.compile("(\S+)\sas\W*\(", re.I)
-
-# TODO: consider using DBT to generate the initial parent_dict rather than parsing the SQL
+import dbt.loader
+from dbt.config import RuntimeConfig
+from dbt.compilation import Compiler
 
 
 class ShowDependenciesTask:
@@ -23,45 +18,18 @@ class ShowDependenciesTask:
             self.direction = "downstream"
         else:
             raise
+        self.config = RuntimeConfig.from_args(args)
+        self.model_path = self.config.source_paths[0]
+        self.manifest = self._get_manifest()
 
-    def create_query_dict(self):
-        sql_files = []
-        for dp, dn, filenames in os.walk("./models"):
-            for fn in filenames:
-                if os.path.splitext(fn)[1] == ".sql":
-                    full_path = os.path.join(dp, fn)
-                    sql_files.append(full_path)
+    def _get_manifest(self):
+        compiler = Compiler(self.config)
+        compiler.initialize()
 
-        query_list = []
-        for sql_file in sql_files:
-            with open(sql_file, "r") as f:
-                query = f.read()
-            if not query.strip() == "":
-                d = {}
-                d["name"] = os.path.splitext(os.path.basename(sql_file))[0]
-                d["sql"] = query
-                d["tpe"] = "view"
-                query_list.append(d)
+        all_projects = compiler.get_all_projects()
 
-        return query_list
-
-    def clean_sql(self, sql):
-        c_sql = sql.lower()  # lowercase everything (for easier match)
-        c_sql = REG_BLOCK_COMMENT.sub("", c_sql)  # remove block comments
-        c_sql = REG_LINE_COMMENT.sub("", c_sql)  # remove line comments
-        c_sql = " ".join(c_sql.split())  # replace \n and multi space w space
-        return c_sql
-
-    # this returns the unique set of parents per query
-    def get_parents(self, c_sql):
-        raw_parents = REG_PARENTS.findall(c_sql)
-        parents = set([x for x in raw_parents if "generate_series" not in x])
-        return parents
-
-    # this returns the unique set of ctes per query, to exclude from parents
-    def get_ctes(self, c_sql):
-        ctes = set(REG_CTES.findall(c_sql))
-        return ctes
+        manifest = dbt.loader.GraphLoader.load_all(self.config, all_projects)
+        return manifest
 
     # this traverses an arbitrary tree (parents or children) to get all ancestors or descendants
     def traverse_tree(self, node, d_tree, been_done=set()):
@@ -113,39 +81,34 @@ class ShowDependenciesTask:
 
         return node_set
 
+    def dereference_model_name(self, model_name):
+        for name, node in self.manifest.nodes.items():
+            if node.name == model_name:
+                return name
+
     def get_node_info(self):
+
         node_info_dict = {}  # intended to store direct node type
         parent_dict = {}  # intended to store parent data
 
-        query_dict = self.create_query_dict()
-        for row in query_dict:
-
-            object_name = row["name"]
-            object_type = row["tpe"]
-            sql = row["sql"]
-
-            # clean the sql
-            c_sql = self.clean_sql(sql)
+        for name, node in self.manifest.nodes.items():
+            d = {}
+            d["name"] = name
+            mat = node.config["materialized"]
+            if len(node['fqn']) == 3:
+                schema = node['fqn'][1]
+            else:
+                schema = node['fqn'][0]
+            d["alias"] = "{}.{}".format(schema, node["alias"])
+            d["type"] = mat
 
             # get the set of parents
-            parents = self.get_parents(c_sql)
-
-            # get set of ctes to exclude from parents
-            ctes = self.get_ctes(c_sql)
-
-            # remove CTES from parent dict
-            for cte in ctes:
-                parents.discard(cte)
-
-            # get rid of brackets in views
-            c_parents = set()
-            for parent in parents:
-                if not parent[:1] == "(":
-                    c_parents.add(REG_BRACKETS.sub("", parent))
+            parents = node["depends_on"]["nodes"]
 
             # add the object name and type and direct parents to the dict
-            node_info_dict[object_name] = object_type
-            parent_dict[object_name] = c_parents
+            node_info_dict[d["name"]] = d
+            parent_dict[d["name"]] = parents
+
         return (parent_dict, node_info_dict)
 
     def build_d_graph(self, parent_dict, node_set, node_type_dict):
@@ -189,27 +152,30 @@ class ShowDependenciesTask:
                 out_d[k] = dep_set
         return out_d
 
-    def run(self, args):
-        parent_dict, node_info_dict = self.get_node_info()
+    def pretty_node_name(self, name):
+        return self.node_info_dict[name]["alias"]
 
-        focal_set = set([self.args.model_name])
+    def run(self, args):
+        parent_dict, self.node_info_dict = self.get_node_info()
+        dbt_name = self.dereference_model_name(self.args.model_name)
+        focal_set = set([dbt_name])
 
         node_set = self.get_node_set(parent_dict, focal_set)
 
         parent_subset_dict = self.subset_dict(parent_dict, node_set)
 
-        G = self.build_d_graph(parent_subset_dict, node_set, node_info_dict)
+        G = self.build_d_graph(parent_subset_dict, node_set, self.node_info_dict)
 
         viz_dict = {}
 
         def update_viz_dict(G, current_node, level=0):
             if len(G.nodes()) == 0:
-                viz_dict[0] = focal_set
+                viz_dict[0] = [self.pretty_node_name(dbt_name)]
                 return
             if level in viz_dict:
-                viz_dict[level].append(current_node)
+                viz_dict[level].append([self.pretty_node_name(current_node)])
             else:
-                viz_dict[level] = [current_node]
+                viz_dict[level] = [self.pretty_node_name(current_node)]
             if self.direction == "upstream":
                 if G.predecessors(current_node) == []:
                     return
@@ -221,6 +187,7 @@ class ShowDependenciesTask:
                 for pred in G.successors(current_node):
                     update_viz_dict(G, pred, level + 1)
 
-        update_viz_dict(G, self.args.model_name)
+        # import ipdb; ipdb.set_trace()
+        update_viz_dict(G, dbt_name)
         self.display_deps(viz_dict)
         return viz_dict
