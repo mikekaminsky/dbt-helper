@@ -1,9 +1,4 @@
-import os
-import re
 import networkx as nx
-import argparse
-import sys
-
 import dbt.loader
 from dbt.config import RuntimeConfig
 from dbt.compilation import Compiler
@@ -35,7 +30,7 @@ class ShowDependenciesTask:
     def traverse_tree(self, node, d_tree, been_done=set()):
         tree_outputs = set(d_tree.get(node, set()))  # direct relatives
         for key in d_tree.get(node, set()):  # 2nd step relatives
-            if not key in been_done:
+            if key not in been_done:
                 been_done.add(key)  # to break any circular references
                 tree_outputs = tree_outputs.union(
                     self.traverse_tree(key, d_tree, been_done)
@@ -47,7 +42,7 @@ class ShowDependenciesTask:
         child_dict = {}
         for node in parent_dict:
             for parent in parent_dict[node]:
-                if not parent in child_dict.keys():
+                if parent not in child_dict.keys():
                     child_dict[parent] = set([node])
                 else:
                     child_dict[parent].add(node)
@@ -95,10 +90,10 @@ class ShowDependenciesTask:
             d = {}
             d["name"] = name
             mat = node.config["materialized"]
-            if len(node['fqn']) == 3:
-                schema = node['fqn'][1]
+            if len(node["fqn"]) == 3:
+                schema = node["fqn"][1]
             else:
-                schema = node['fqn'][0]
+                schema = node["fqn"][0]
             d["alias"] = "{}.{}".format(schema, node["alias"])
             d["type"] = mat
 
@@ -112,22 +107,10 @@ class ShowDependenciesTask:
         return (parent_dict, node_info_dict)
 
     def build_d_graph(self, parent_dict, node_set, node_type_dict):
-
-        # if focus_objct is specified, only the branches related to that object will be returned
-        # if direction is specified, only ancestors or only descedents will be shown
         G = nx.DiGraph()  # initialize directional graph object
 
         for node in node_set:
-
-            # Add color nodes
-            if node_type_dict.get(node, None) == "view":
-                G.add_node(node, color="green")
-            elif node_type_dict.get(node, None) == "chart":
-                G.add_node(node, color="blue")
-            elif node_type_dict.get(node, None) == "csv":
-                G.add_node(node, color="red")
-
-            # add edges and non-color nodes
+            G.add_node(node)
             for parent in parent_dict.get(node, set()):
                 G.add_edge(parent, node)
         return G
@@ -187,7 +170,6 @@ class ShowDependenciesTask:
                 for pred in G.successors(current_node):
                     update_viz_dict(G, pred, level + 1)
 
-        # import ipdb; ipdb.set_trace()
         update_viz_dict(G, dbt_name)
         self.display_deps(viz_dict)
         return viz_dict
