@@ -20,6 +20,8 @@ pip install dbt-helper
   * Note: `dbt-helper compare` will compare all schemas that are impacted by models in the `models/` directory. There is (currently) no way to specify a single schema to compare.
 * `bootstrap`: Create starter "`schema.yml`" files for your project. This function helpfully generates boilerplate dbt-model files for you so you don't have to go through the copy/paste when you're developing a new model.
   * Note: this command will not over-write existing `schema.yml` files. It will default to printing templates to the console, but you can create new files by using the `--write-files` flag.
+* `show_upstream`: Inspect the dbt graph and show the relations that are "upstream" from (i.e., the "parents" of) the selected relation. Print to the terminal.
+* `show_downtream`: The same as `show_upstream` but in the other direction -- show dependents 'downstream' from (i.e., the "children" of) the selected relation
 
 As one might hope, you can view the command line options directly from the tool by using the help functionality:
 
@@ -69,6 +71,16 @@ models:
   description: 'TODO: Replace me'
 ```
 
+#### `show_upstream`
+```bash
+$ dbt-helper show_upstream d
+
+--------------------------------------------------------------------------------
+                                  downstream.d
+--------------------------------------------------------------------------------
+                                   example.b
+--------------------------------------------------------------------------------
+```
 
 ## Contributing
 
@@ -122,4 +134,5 @@ tox -e dev -- --nocapture test/integration/001_compare_test/
 
 * Thanks to [Drew Banin](https://github.com/drewbanin) for invaluable discussion and code-review on early `dbt-helper` features.
 * Thanks to [John Lynch](https://github.com/jplynch77) for early beta-testing and feedback.
+* Thanks to [Leon Tchikindas](https://github.com/ltchikindas) for the [blog post](https://www.periscopedata.com/blog/automated-identification-and-graphing-of-sql-dependencies) (and code) inspiring this command-line graph builder.
 
