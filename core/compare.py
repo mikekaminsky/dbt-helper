@@ -1,4 +1,3 @@
-from dbt.compilation import Compiler
 from dbt.config import RuntimeConfig
 import dbt.adapters.factory
 from dbt.node_types import NodeType
@@ -15,12 +14,7 @@ class CompareTask:
         self.config = RuntimeConfig.from_args(args)
 
     def _get_manifest(self):
-        compiler = Compiler(self.config)
-        compiler.initialize()
-
-        all_projects = compiler.get_all_projects()
-
-        manifest = dbt.loader.GraphLoader.load_all(self.config, all_projects)
+        manifest = dbt.loader.GraphLoader.load_all(self.config)
         return manifest
 
     def run(self):
@@ -29,11 +23,12 @@ class CompareTask:
         adapter = dbt.adapters.factory.get_adapter(self.config)
         manifest = self._get_manifest()
 
-        checked_schemas = manifest.get_used_schemas()
+        schemas = manifest.get_used_schemas()
 
         db_relations = []
-        for schema in checked_schemas:
-            db_relations.extend(adapter.list_relations(schema))
+        for database_name, schema_name in schemas:
+            # needs database argument
+            db_relations.extend(adapter.list_relations(database_name, schema_name))
 
         database_relations = set()
         database_relations_map = dict()
@@ -45,7 +40,7 @@ class CompareTask:
         logger.info(
             "Comparing local models to the database catalog. " "Checking schemas:"
         )
-        for schema_name in checked_schemas:
+        for database_name, schema_name in schemas:
             logger.info("- {}".format(schema_name))
 
         # Look up all of the relations dbt knows about
