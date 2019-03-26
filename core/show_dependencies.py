@@ -1,7 +1,6 @@
 import networkx as nx
 import dbt.loader
 from dbt.config import RuntimeConfig
-from dbt.compilation import Compiler
 
 
 class ShowDependenciesTask:

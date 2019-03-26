@@ -41,14 +41,16 @@ class DBTIntegrationTest(unittest.TestCase):
         self.load_config()
 
     def tearDown(self):
+
+        self.load_config()  # Re-set the connection
+        self.run_sql('DROP SCHEMA IF EXISTS "{}" CASCADE'.format(self.test_schema_name))
+
         if os.path.exists("dbt_project.yml"):
             os.remove("dbt_project.yml")
         if os.path.exists("packages.yml"):
             os.remove("packages.yml")
         if os.path.exists("profiles.yml"):
             os.remove("profiles.yml")
-
-        self.run_sql('DROP SCHEMA IF EXISTS "{}" CASCADE'.format(self.test_schema_name))
 
     @property
     def project_config(self):
@@ -135,6 +137,7 @@ class DBTIntegrationTest(unittest.TestCase):
         if sql.strip() == "":
             return
 
+        self.load_config()
         conn = self.connection
         with conn.handle.cursor() as cursor:
             try:
