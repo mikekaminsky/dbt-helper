@@ -12,6 +12,8 @@ This repository is **not** formally associated with dbt and is not maintained by
 pip install dbt-helper
 ```
 
+NOTE: dbt-helper may not work with dbt when dbt is installed via homebrew. We are currently investigating options for fixes, but if you experience issues that might be the culprit.
+
 ## Usage
 
 `dbt-helper` (currently) has two sub-commands:

@@ -1,7 +1,6 @@
 import networkx as nx
 import dbt.loader
 from dbt.config import RuntimeConfig
-from dbt.compilation import Compiler
 
 
 class ShowDependenciesTask:
@@ -18,12 +17,7 @@ class ShowDependenciesTask:
         self.manifest = self._get_manifest()
 
     def _get_manifest(self):
-        compiler = Compiler(self.config)
-        compiler.initialize()
-
-        all_projects = compiler.get_all_projects()
-
-        manifest = dbt.loader.GraphLoader.load_all(self.config, all_projects)
+        manifest = dbt.loader.GraphLoader.load_all(self.config)
         return manifest
 
     # this traverses an arbitrary tree (parents or children) to get all ancestors or descendants

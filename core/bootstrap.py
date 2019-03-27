@@ -1,6 +1,5 @@
 import os
 
-from dbt.compilation import Compiler
 from dbt.config import RuntimeConfig
 import dbt.adapters.factory
 
@@ -33,12 +32,7 @@ class BootstrapTask:
         self.config = RuntimeConfig.from_args(args)
 
     def _get_manifest(self):
-        compiler = Compiler(self.config)
-        compiler.initialize()
-
-        all_projects = compiler.get_all_projects()
-
-        manifest = dbt.loader.GraphLoader.load_all(self.config, all_projects)
+        manifest = dbt.loader.GraphLoader.load_all(self.config)
         return manifest
 
     def render_relations(self, models):
