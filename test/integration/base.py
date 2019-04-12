@@ -6,6 +6,7 @@ import sys
 import os
 import yaml
 from core.main import handle
+import shutil
 
 IS_DOCKER = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
 
@@ -38,6 +39,7 @@ class DBTIntegrationTest(unittest.TestCase):
     def setUp(self):
         self.use_profile()
         self.use_default_project()
+        self.set_packages()
         self.load_config()
 
     def tearDown(self):
@@ -51,10 +53,16 @@ class DBTIntegrationTest(unittest.TestCase):
             os.remove("packages.yml")
         if os.path.exists("profiles.yml"):
             os.remove("profiles.yml")
+        if os.path.exists('dbt_modules'):
+            shutil.rmtree('dbt_modules')
 
     @property
     def project_config(self):
         return {}
+
+    @property
+    def packages_config(self):
+        return None
 
     @property
     def test_path(self):
@@ -115,6 +123,11 @@ class DBTIntegrationTest(unittest.TestCase):
             yaml.safe_dump(profile_config, f, default_flow_style=True)
 
         self._profile_config = profile_config
+
+    def set_packages(self):
+        if self.packages_config is not None:
+            with open('packages.yml', 'w') as f:
+                yaml.safe_dump(self.packages_config, f, default_flow_style=True)
 
     def load_config(self):
         # we've written our profile and project. Now we want to instantiate a
@@ -183,7 +196,6 @@ class DBTIntegrationTest(unittest.TestCase):
         return results
 
     def run_dbt(self, args):
-
         if args is None:
             args = ["run"]
 

@@ -2,7 +2,7 @@
 
 NOTE: `dbt-helper` is still in extremely-limited beta release. We'd love your help, testing it though! Until we're out of beta, please don't build this into anything production-touching as it will surely get broken sooner rather than later
 
-`dbt-helper` is a command line tool that helps with developing [`dbt`](https://www.getdbt.com/) codebases and managing data warehouses. 
+`dbt-helper` is a command line tool that helps with developing [`dbt`](https://www.getdbt.com/) projects and managing data warehouses.
 
 This repository is **not** formally associated with dbt and is not maintained by fishtown-analytics (the maintainers of dbt). If you have problems with one of these tools, please file an issue on this repository and do not bother the dbt maintainers about it.
 
@@ -16,14 +16,15 @@ NOTE: dbt-helper may not work with dbt when dbt is installed via homebrew. We ar
 
 ## Usage
 
-`dbt-helper` (currently) has two sub-commands:
+`dbt-helper` (currently) has five sub-commands:
 
 * `compare`: Compare the relations in your warehouse with those that dbt is managing. This is useful for identifying "stale" relations that are no longer being updated by dbt (like if, for example, you converted the model from materialized to ephemeral).
   * Note: `dbt-helper compare` will compare all schemas that are impacted by models in the `models/` directory. There is (currently) no way to specify a single schema to compare.
 * `bootstrap`: Create starter "`schema.yml`" files for your project. This function helpfully generates boilerplate dbt-model files for you so you don't have to go through the copy/paste when you're developing a new model.
   * Note: this command will not over-write existing `schema.yml` files. It will default to printing templates to the console, but you can create new files by using the `--write-files` flag.
 * `show_upstream`: Inspect the dbt graph and show the relations that are "upstream" from (i.e., the "parents" of) the selected relation. Print to the terminal.
-* `show_downtream`: The same as `show_upstream` but in the other direction -- show dependents 'downstream' from (i.e., the "children" of) the selected relation
+* `show_downstream`: The same as `show_upstream` but in the other direction -- show dependents 'downstream' from (i.e., the "children" of) the selected relation
+* `open`: Open the compiled `.sql` file for a model by providing the model name only. You can also open the source or run `.sql` files for a model by using the appropriate flag. Useful when working in large dbt projects and you want to open files quickly wihout having to navigate a file tree.
 
 As one might hope, you can view the command line options directly from the tool by using the help functionality:
 
@@ -84,6 +85,48 @@ $ dbt-helper show_upstream d
 --------------------------------------------------------------------------------
 ```
 
+#### `open`
+
+```bash
+# Open the compiled version of model
+$ dbt-helper open my_model
+
+# Same as above
+$ dbt-helper open my_model --compiled
+
+# Open the run version of the model
+$ dbt-helper open my_model --run
+
+# Open the source version of the model
+$ dbt-helper open my_model --source
+
+```
+Understanding the flags:
+* The `--compiled` flag will open the relevant `.sql` file in the
+`target/compiled` directory. This file contains the compiled `SELECT` query.
+* The `--run` flag will open the relevant `.sql` file in the `target/run`
+directory. The `run` version of the model contains the compiled query wrapped
+in the DDL (i.e. `CREATE`) statements to materialize it in the warehouse.
+* The `--source` flag will open the relevant jinja-flavored `.sql` file in the
+`models/` directory.
+
+Without a flag, dbt-helper will open the `compiled` model.
+
+**If dbt-helper is opening your file in the wrong text editor**, update your
+`$EDITOR` environment variable to be the command you normally use to open a file
+in your text editor, e.g. `vim`, `emacs`, `atom`, `code`, or `subl`. If you
+would prefer to not update your `$EDITOR` env var, you can instead create a
+`$DBT_HELPER_EDITOR` environment variable for your command.
+
+dbt-helper will try to use one of the following commands to open the file (in
+order of precedence):
+* `$DBT_HELPER_EDITOR`. If this is not set, then it will use:
+* `$EDITOR`: A standard environment variable used across a number of
+applications (e.g. git prompts launch in the editor specified here). If this is
+not set, then use:
+* `"Open"`: Generic command that will open a file in the default application for
+the associated file type.
+
 ## Contributing
 
 Install locally for development:
@@ -137,4 +180,3 @@ tox -e dev -- --nocapture test/integration/001_compare_test/
 * Thanks to [Drew Banin](https://github.com/drewbanin) for invaluable discussion and code-review on early `dbt-helper` features.
 * Thanks to [John Lynch](https://github.com/jplynch77) for early beta-testing and feedback.
 * Thanks to [Leon Tchikindas](https://github.com/ltchikindas) for the [blog post](https://www.periscopedata.com/blog/automated-identification-and-graphing-of-sql-dependencies) (and code) inspiring this command-line graph builder.
-
