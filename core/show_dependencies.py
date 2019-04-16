@@ -1,6 +1,7 @@
 import networkx as nx
 import dbt.loader
 from dbt.config import RuntimeConfig
+from dbt.logger import GLOBAL_LOGGER as logger
 
 
 class ShowDependenciesTask:
@@ -135,6 +136,14 @@ class ShowDependenciesTask:
     def run(self, args):
         parent_dict, self.node_info_dict = self.get_node_info()
         dbt_name = self.dereference_model_name(self.args.model_name)
+        if not dbt_name:
+            logger.info(
+                dbt.ui.printer.yellow(
+                    "Warning: The model argument {} does not match any models "
+                    "found in this project:".format(self.args.model_name)
+                )
+            )
+            return {}
         focal_set = set([dbt_name])
 
         node_set = self.get_node_set(parent_dict, focal_set)

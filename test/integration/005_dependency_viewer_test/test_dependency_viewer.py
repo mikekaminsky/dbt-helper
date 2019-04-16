@@ -12,3 +12,8 @@ class DependencyTest(DBTIntegrationTest):
         self.assertTrue(len(results) == 3)
         results = self.run_dbthelper(["show_downstream", "c"])
         self.assertTrue(len(results) == 2)
+
+    def test_bad_model_arg(self):
+        self.run_dbt(["run"])
+        results = self.run_dbthelper(["show_downstream", "non_existent_model"])
+        self.assertTrue(len(results) == 0)
