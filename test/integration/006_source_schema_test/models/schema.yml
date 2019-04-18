@@ -1,0 +1,7 @@
+version: 2
+
+sources:
+  - name: pg_catalog
+    schema: pg_catalog
+    tables:
+      - name: pg_tables

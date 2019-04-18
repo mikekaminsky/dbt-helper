@@ -83,16 +83,23 @@ class ShowDependenciesTask:
         for name, node in self.manifest.nodes.items():
             d = {}
             d["name"] = name
-            mat = node.config["materialized"]
-            if len(node["fqn"]) == 3:
-                schema = node["fqn"][1]
+            if node['resource_type'] == 'source':
+                mat = 'source'
+                schema = node['schema']
+                alias = node['name']
+                parents = []
             else:
-                schema = node["fqn"][0]
-            d["alias"] = "{}.{}".format(schema, node["alias"])
-            d["type"] = mat
+                mat = node.config["materialized"]
+                if len(node["fqn"]) == 3:
+                    schema = node["fqn"][1]
+                else:
+                    schema = node["fqn"][0]
 
-            # get the set of parents
-            parents = node["depends_on"]["nodes"]
+                alias = node["alias"]
+                parents = node["depends_on"]["nodes"]
+
+            d["type"] = mat
+            d["alias"] = "{}.{}".format(schema, alias)
 
             # add the object name and type and direct parents to the dict
             node_info_dict[d["name"]] = d
