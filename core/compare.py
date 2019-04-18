@@ -23,11 +23,26 @@ class CompareTask:
         adapter = dbt.adapters.factory.get_adapter(self.config)
         manifest = self._get_manifest()
 
-        schemas = manifest.get_used_schemas()
+        schemas = set()
+        model_relations = set()
+        # Look up all of the relations dbt knows about
+        for node in manifest.nodes.values():
+            if node["resource_type"] != "source":
+                schema_info = (node["database"], node["schema"])
+                schemas.update([schema_info])
+                node = node.to_dict()
+                is_refable = (
+                    node["resource_type"] in NodeType.refable()
+                    or node["resource_type"] == "archive"
+                )
+                is_enabled = check_is_enabled(node)
+                is_ephemeral = node["config"]["materialized"] == "ephemeral"
+                if is_refable and is_enabled and not is_ephemeral:
+                    rel = (node["schema"].lower(), node["alias"].lower())
+                    model_relations.add(rel)
 
         db_relations = []
         for database_name, schema_name in schemas:
-            # needs database argument
             db_relations.extend(adapter.list_relations(database_name, schema_name))
 
         database_relations = set()
@@ -42,17 +57,6 @@ class CompareTask:
         )
         for database_name, schema_name in schemas:
             logger.info("- {}".format(schema_name))
-
-        # Look up all of the relations dbt knows about
-        model_relations = set()
-        for node in manifest.nodes.values():
-            node = node.to_dict()
-            is_refable = node["resource_type"] in NodeType.refable() or node["resource_type"] == 'archive'
-            is_enabled = check_is_enabled(node)
-            is_ephemeral = node["config"]["materialized"] == "ephemeral"
-            if is_refable and is_enabled and not is_ephemeral:
-                rel = (node["schema"].lower(), node["alias"].lower())
-                model_relations.add(rel)
 
         problems = database_relations - model_relations
 
