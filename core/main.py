@@ -5,6 +5,7 @@ import os
 import core.bootstrap as bootstrap_task
 import core.compare as compare_task
 import core.show_dependencies as show_dependencies_task
+import core.open as open_task
 
 from dbt.config import PROFILES_DIR
 
@@ -25,7 +26,7 @@ def get_nearest_project_dir():
 def parse_args(args):
 
     p = argparse.ArgumentParser(
-        prog="dbt-helper: additional tools for wokring with DBT",
+        prog="dbt-helper: additional tools for working with DBT",
         formatter_class=argparse.RawTextHelpFormatter,
         description="Additional CLI tools for faster DBT development and database management",
         epilog="Select one of these sub-commands and you can find more help from there.",
@@ -100,7 +101,9 @@ def parse_args(args):
         parents=[base_subparser],
         help="Show upstream dependencies for a model",
     )
-    upstream_depencies_sub.set_defaults(cls=show_dependencies_task.ShowDependenciesTask, which="show_upstream")
+    upstream_depencies_sub.set_defaults(
+        cls=show_dependencies_task.ShowDependenciesTask, which="show_upstream"
+    )
     upstream_depencies_sub.add_argument("model_name")
 
     downstream_depencies_sub = subs.add_parser(
@@ -108,8 +111,54 @@ def parse_args(args):
         parents=[base_subparser],
         help="Show downstream dependencies for a model",
     )
-    downstream_depencies_sub.set_defaults(cls=show_dependencies_task.ShowDependenciesTask, which="show_downstream")
+    downstream_depencies_sub.set_defaults(
+        cls=show_dependencies_task.ShowDependenciesTask, which="show_downstream"
+    )
     downstream_depencies_sub.add_argument("model_name")
+
+    open_sub = subs.add_parser(
+        "open",
+        parents=[base_subparser],
+        help="Open the a source/compiled/run file for a model",
+    )
+
+    open_sub.set_defaults(cls=open_task.OpenTask, which="open", code_type="compiled")
+
+    open_sub.add_argument("model_name", help="The name of the model to open")
+
+    code_type = open_sub.add_mutually_exclusive_group()
+
+    code_type.add_argument(
+        "--source",
+        "-s",
+        action="store_const",
+        const="source",
+        dest="code_type",
+        help="""
+            Open the raw jinja-flavored SELECT statement, from the models/
+            directory.""",
+    )
+
+    code_type.add_argument(
+        "--compiled",
+        "-c",
+        action="store_const",
+        const="compiled",
+        dest="code_type",
+        help="""
+            Open the compiled SELECT statement, from the target/compiled
+            directory. This is the default behavior.""",
+    )
+    code_type.add_argument(
+        "--run",
+        "-r",
+        action="store_const",
+        const="run",
+        dest="code_type",
+        help="""
+            Open the compiled model wrapped in the appropriate DDL (i.e. CREATE
+            statements), from the target/run directory.""",
+    )
 
     if len(args) == 0:
         p.print_help()
@@ -142,9 +191,13 @@ def handle(args):
         task = compare_task.CompareTask(parsed)
         results = task.run()
 
-    if parsed.command in("show_upstream", "show_downstream"):
+    if parsed.command in ("show_upstream", "show_downstream"):
         task = show_dependencies_task.ShowDependenciesTask(parsed)
         results = task.run(parsed)
+
+    if parsed.command == "open":
+        task = open_task.OpenTask(parsed)
+        results = task.run()
 
     return results
 
