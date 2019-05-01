@@ -25,6 +25,7 @@ NOTE: dbt-helper may not work with dbt when dbt is installed via homebrew. We ar
 * `show_upstream`: Inspect the dbt graph and show the relations that are "upstream" from (i.e., the "parents" of) the selected relation. Print to the terminal.
 * `show_downstream`: The same as `show_upstream` but in the other direction -- show dependents 'downstream' from (i.e., the "children" of) the selected relation
 * `open`: Open the compiled `.sql` file for a model by providing the model name only. You can also open the source or run `.sql` files for a model by using the appropriate flag. Useful when working in large dbt projects and you want to open files quickly wihout having to navigate a file tree.
+* `retry-failed`: Rerun models that errored or were skipped on your previous dbt run.
 
 As one might hope, you can view the command line options directly from the tool by using the help functionality:
 
@@ -126,6 +127,24 @@ applications (e.g. git prompts launch in the editor specified here). If this is
 not set, then use:
 * `"Open"`: Generic command that will open a file in the default application for
 the associated file type.
+
+
+#### `retry-failed`
+```bash
+$ dbt-helper retry-failed
+dbt run --models my_failed_model my_skipped_model
+Running with dbt=0.13.0
+Found 8 models, 20 tests, 0 archives, 0 analyses, 113 macros, 0 operations, 3 seed files, 0 sources
+
+17:40:11 | Concurrency: 1 threads (target='dev')
+17:40:11 |
+17:40:11 | 1 of 2 START view model dev_example.my_failed_model.................. [RUN]
+17:40:12 | 1 of 2 OK created view model dev_example.my_failed_model............. [CREATE VIEW in 0.65s]
+17:40:12 | 2 of 2 START table model dev_example.my_skipped_model................ [RUN]
+17:40:29 | 2 of 2 OK created table model dev_example.my_skipped_model........... [SELECT in 16.86s]
+17:41:31 |
+17:41:31 | Finished running 1 view models, 1 table models in 80.96s.
+```
 
 ## Contributing
 

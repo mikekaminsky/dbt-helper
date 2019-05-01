@@ -6,6 +6,7 @@ import core.bootstrap as bootstrap_task
 import core.compare as compare_task
 import core.show_dependencies as show_dependencies_task
 import core.open as open_task
+import core.retry_failed as retry_failed_task
 
 from dbt.config import PROFILES_DIR
 
@@ -160,6 +161,17 @@ def parse_args(args):
             statements), from the target/run directory.""",
     )
 
+    retry_failed_sub = subs.add_parser(
+        "retry-failed",
+        parents=[base_subparser],
+        help="""
+            Rerun the models that failed or were skipped on the previous run.""",
+    )
+
+    retry_failed_sub.set_defaults(
+        cls=retry_failed_task.RetryFailedTask, which="retry-failed"
+    )
+
     if len(args) == 0:
         p.print_help()
         sys.exit(1)
@@ -197,6 +209,10 @@ def handle(args):
 
     if parsed.command == "open":
         task = open_task.OpenTask(parsed)
+        results = task.run()
+
+    if parsed.command == "retry-failed":
+        task = retry_failed_task.RetryFailedTask(parsed)
         results = task.run()
 
     return results
