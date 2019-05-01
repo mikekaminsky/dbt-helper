@@ -196,7 +196,7 @@ tox -e dev -- --nocapture test/integration/001_compare_test/
 
 ## Giving Thanks
 
-* Thanks to [Claire Carroll](https://github.com/clrcrl) for the `open` function
+* Thanks to [Claire Carroll](https://github.com/clrcrl) for the `open` and `retry-failed` functions
 * Thanks to [Drew Banin](https://github.com/drewbanin) for invaluable discussion and code-review on early `dbt-helper` features.
 * Thanks to [John Lynch](https://github.com/jplynch77) for early beta-testing and feedback.
 * Thanks to [Leon Tchikindas](https://github.com/ltchikindas) for the [blog post](https://www.periscopedata.com/blog/automated-identification-and-graphing-of-sql-dependencies) (and code) inspiring this command-line graph builder.
