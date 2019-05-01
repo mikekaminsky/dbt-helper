@@ -202,3 +202,5 @@ class DBTIntegrationTest(unittest.TestCase):
         args.extend(["--profiles-dir", self.dbt_config_dir])
 
         res, success = handle_and_check(args)
+
+        return res, success

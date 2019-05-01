@@ -55,7 +55,11 @@ class RetryFailedTask:
 
         run_flags = self.get_run_flags()
 
-        command = " ".join(["dbt run --models ", *models_to_retry, *run_flags])
+        args = ["dbt run --models"]
+        args.extend(models_to_retry)
+        args.extend(run_flags)
+
+        command = " ".join(args)
 
         print(command)
         subprocess.call(command, shell=True)

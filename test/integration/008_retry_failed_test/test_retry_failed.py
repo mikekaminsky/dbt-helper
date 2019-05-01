@@ -7,8 +7,11 @@ class RetryFailedTest(DBTIntegrationTest):
         return "test/integration/008_retry_failed_test/models"
 
     def tests_retry_failed(self):
-        try:
-            self.run_dbt(["run"])
-        except InvocationError:
-            pass
-        self.assertEqual(self.run_dbthelper(["retry-failed"]), ["my_failing_model", "my_skipped_model"])
+        _, success = self.run_dbt(["run"])
+
+        self.assertFalse(success)
+
+        self.assertEqual(
+            self.run_dbthelper(["retry-failed"]),
+            ["my_failing_model", "my_skipped_model"],
+        )
