@@ -161,6 +161,15 @@ def parse_args(args):
             statements), from the target/run directory.""",
     )
 
+    open_sub.add_argument(
+        "--print",
+        "-p",
+        action="store_true",
+        dest="print_model",
+        help="""
+            Print model text rather than opening in a text editor.""",
+    )
+
     retry_failed_sub = subs.add_parser(
         "retry-failed",
         parents=[base_subparser],

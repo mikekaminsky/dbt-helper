@@ -1,9 +1,8 @@
-from dbt.config import RuntimeConfig
-
 import os
 import json
 import subprocess
 
+from dbt.config import RuntimeConfig
 
 COMPILED_DIR = "compiled"
 RUN_DIR = "run"
@@ -95,15 +94,20 @@ class OpenTask:
                 )
             )
 
-        result = subprocess.call(
-            " ".join([self.open_command, file_to_open]), shell=True
-        )
-        if result == 0:
-            print("Opened " + file_to_open)
+        if self.args.print_model:
+            with open(file_to_open, "r") as f:
+                print(f.read())
         else:
-            raise Exception(
-                "Unsuccessfully tried to open a file using the '{}' command. "
-                "You may need to update your $DBT_HELPER_EDITOR or $EDITOR "
-                "environment variable.".format(self.open_command)
+            result = subprocess.call(
+                " ".join([self.open_command, file_to_open]), shell=True
             )
-        return result
+            if result == 0:
+                print("Opened " + file_to_open)
+            else:
+                raise Exception(
+                    "Unsuccessfully tried to open a file using the '{}' command. "
+                    "You may need to update your $DBT_HELPER_EDITOR or $EDITOR "
+                    "environment variable.".format(self.open_command)
+                )
+
+            return result
