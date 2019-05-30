@@ -101,6 +101,9 @@ $ dbt-helper open my_model --run
 # Open the source version of the model
 $ dbt-helper open my_model --source
 
+# Print model to STDOUT rather than opening in a text editor
+$ dbt-helper open my_model --print
+
 ```
 Understanding the flags:
 * The `--compiled` flag will open the relevant `.sql` file in the
