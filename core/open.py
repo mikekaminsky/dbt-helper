@@ -63,7 +63,14 @@ class OpenTask:
                 package_name = node["package_name"]
                 relative_path = node["path"]
 
-                file_names["source"] = os.path.join(root_path, original_file_path)
+                orig_components = os.path.normpath(original_file_path).split(os.sep)
+                root_components = os.path.normpath(root_path).split(os.sep)
+
+                source_path = os.path.join(
+                    *[x for x in orig_components if x not in root_components]
+                )
+
+                file_names["source"] = source_path
 
                 file_names["compiled"] = os.path.join(
                     self.target_path, COMPILED_DIR, package_name, relative_path
@@ -94,6 +101,8 @@ class OpenTask:
                 )
             )
 
+        print(file_to_open)
+
         if self.args.print_model:
             with open(file_to_open, "r") as f:
                 print(f.read())
@@ -110,4 +119,4 @@ class OpenTask:
                     "environment variable.".format(self.open_command)
                 )
 
-            return result
+        return file_to_open
