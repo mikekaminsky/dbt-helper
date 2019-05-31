@@ -23,9 +23,7 @@ class OpenTest(DBTIntegrationTest):
         if len(args) > 1:
             code_type = args[1]
         else:
-            code_type = 'NA'
-
-
+            code_type = "NA"
 
         if model_name == "my_model":
             c_location = "test/"
@@ -42,8 +40,8 @@ class OpenTest(DBTIntegrationTest):
         correct_path = path + model_name + ".sql"
 
         # Have to special-case this one
-        if args[0] == "my_package_model" and code_type in("-s","--source"):
-            correct_path = 'dbt_modules/local_dep/models/my_package_model.sql'
+        if args[0] == "my_package_model" and code_type in ("-s", "--source"):
+            correct_path = "dbt_modules/local_dep/models/my_package_model.sql"
 
         return result == correct_path
 

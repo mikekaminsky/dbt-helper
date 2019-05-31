@@ -63,13 +63,14 @@ class OpenTask:
                 package_name = node["package_name"]
                 relative_path = node["path"]
 
-
                 orig_components = os.path.normpath(original_file_path).split(os.sep)
                 root_components = os.path.normpath(root_path).split(os.sep)
 
-                if node['package_name'] == 'local_dep':
-                    package_path = ['dbt_modules', 'local_dep']
-                    root_components = [x for x in root_components if x not in package_path]
+                if node["package_name"] == "local_dep":
+                    package_path = ["dbt_modules", "local_dep"]
+                    root_components = [
+                        x for x in root_components if x not in package_path
+                    ]
                     package_path.extend(orig_components)
                     orig_components = package_path
 
