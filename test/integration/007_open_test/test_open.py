@@ -1,6 +1,5 @@
 from test.integration.base import DBTIntegrationTest
 
-
 class OpenTest(DBTIntegrationTest):
     """
     Want to test that this works for each file type, and for installed packages

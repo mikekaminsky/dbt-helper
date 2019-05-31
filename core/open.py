@@ -10,7 +10,6 @@ MANIFEST_FILE = "manifest.json"
 DEFAULT_OPEN_COMMAND = "open"
 COMPILATION_MESSAGE = "You may need to run dbt compile first."
 
-
 class OpenTask:
     def __init__(self, args):
         self.args = args
