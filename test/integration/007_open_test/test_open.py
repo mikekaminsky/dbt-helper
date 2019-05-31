@@ -19,20 +19,31 @@ class OpenTest(DBTIntegrationTest):
     def check_model_file_opened(self, args):
         result = self.run_dbthelper(["open"] + args)
 
-        if args[0] == "my_model":
+        model_name = args[0]
+        if len(args) > 1:
+            code_type = args[1]
+        else:
+            code_type = 'NA'
+
+
+
+        if model_name == "my_model":
             c_location = "test/"
-        elif args[0] == "my_package_model":
+        elif model_name == "my_package_model":
             c_location = "local_dep/"
 
         path = "target/compiled/" + c_location
 
-        if len(args) > 1:
-            if args[1] in ("--run", "-r"):
-                path = "target/run/" + c_location
-            if args[1] in ("--source", "-s"):
-                path = self.models + "/"
+        if code_type in ("--run", "-r"):
+            path = "target/run/" + c_location
+        if code_type in ("--source", "-s"):
+            path = self.models + "/"
 
-        correct_path = path + args[0] + ".sql"
+        correct_path = path + model_name + ".sql"
+
+        # Have to special-case this one
+        if args[0] == "my_package_model" and code_type in("-s","--source"):
+            correct_path = 'dbt_modules/local_dep/models/my_package_model.sql'
 
         return result == correct_path
 
@@ -49,4 +60,4 @@ class OpenTest(DBTIntegrationTest):
         self.assertTrue(self.check_model_file_opened(["my_package_model", "-c"]))
         self.assertTrue(self.check_model_file_opened(["my_package_model", "-r"]))
         self.assertTrue(self.check_model_file_opened(["my_package_model", "-p"]))
-        # self.assertTrue(self.check_model_file_opened(["my_package_model", "-s"]))
+        self.assertTrue(self.check_model_file_opened(["my_package_model", "-s"]))
