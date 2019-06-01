@@ -10,6 +10,7 @@ MANIFEST_FILE = "manifest.json"
 DEFAULT_OPEN_COMMAND = "open"
 COMPILATION_MESSAGE = "You may need to run dbt compile first."
 
+
 class OpenTask:
     def __init__(self, args):
         self.args = args
@@ -62,22 +63,7 @@ class OpenTask:
                 package_name = node["package_name"]
                 relative_path = node["path"]
 
-                orig_components = os.path.normpath(original_file_path).split(os.sep)
-                root_components = os.path.normpath(root_path).split(os.sep)
-
-                if node["package_name"] == "local_dep":
-                    package_path = ["dbt_modules", "local_dep"]
-                    root_components = [
-                        x for x in root_components if x not in package_path
-                    ]
-                    package_path.extend(orig_components)
-                    orig_components = package_path
-
-                source_path = os.path.join(
-                    *[x for x in orig_components if x not in root_components]
-                )
-
-                file_names["source"] = source_path
+                file_names["source"] = os.path.join(root_path, original_file_path)
 
                 file_names["compiled"] = os.path.join(
                     self.target_path, COMPILED_DIR, package_name, relative_path
