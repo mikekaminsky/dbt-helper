@@ -6,6 +6,7 @@ import core.bootstrap as bootstrap_task
 import core.compare as compare_task
 import core.show_dependencies as show_dependencies_task
 import core.open as open_task
+import core.find as find_task
 import core.retry_failed as retry_failed_task
 
 from dbt.config import PROFILES_DIR
@@ -117,64 +118,64 @@ def parse_args(args):
     )
     downstream_depencies_sub.add_argument("model_name")
 
+
+    find_sub = subs.add_parser(
+        "find",
+        parents=[base_subparser],
+        help="Find the source/compiled/run file for a model",
+    )
+    find_sub.set_defaults(cls=find_task.FindTask, which="find", code_type="compiled")
+
     open_sub = subs.add_parser(
         "open",
         parents=[base_subparser],
-        help="Open the a source/compiled/run file for a model",
+        help="Open the source/compiled/run file for a model",
     )
-
     open_sub.set_defaults(cls=open_task.OpenTask, which="open", code_type="compiled")
 
-    open_sub.add_argument("model_name", help="The name of the model to open")
+    for subparser in [find_sub, open_sub]:
 
-    code_type = open_sub.add_mutually_exclusive_group()
+        subparser.add_argument("model_name", help="The name of the model to open")
 
-    code_type.add_argument(
-        "--source",
-        "-s",
-        action="store_const",
-        const="source",
-        dest="code_type",
-        help="""
-            Open the raw jinja-flavored SELECT statement, from the models/
-            directory.""",
-    )
+        code_type = subparser.add_mutually_exclusive_group()
 
-    code_type.add_argument(
-        "--compiled",
-        "-c",
-        action="store_const",
-        const="compiled",
-        dest="code_type",
-        help="""
-            Open the compiled SELECT statement, from the target/compiled
-            directory. This is the default behavior.""",
-    )
-    code_type.add_argument(
-        "--run",
-        "-r",
-        action="store_const",
-        const="run",
-        dest="code_type",
-        help="""
-            Open the compiled model wrapped in the appropriate DDL (i.e. CREATE
-            statements), from the target/run directory.""",
-    )
+        code_type.add_argument(
+            "--source",
+            "-s",
+            action="store_const",
+            const="source",
+            dest="code_type",
+            help="""
+                Open the raw jinja-flavored SELECT statement, from the models/
+                directory.""",
+        )
 
-    open_sub.add_argument(
-        "--print",
-        "-p",
-        action="store_true",
-        dest="print_model",
-        help="""
-            Print model text rather than opening in a text editor.""",
-    )
+        code_type.add_argument(
+            "--compiled",
+            "-c",
+            action="store_const",
+            const="compiled",
+            dest="code_type",
+            help="""
+                Open the compiled SELECT statement, from the target/compiled
+                directory. This is the default behavior.""",
+        )
+        code_type.add_argument(
+            "--run",
+            "-r",
+            action="store_const",
+            const="run",
+            dest="code_type",
+            help="""
+                Open the compiled model wrapped in the appropriate DDL (i.e. CREATE
+                statements), from the target/run directory.""",
+        )
+
 
     retry_failed_sub = subs.add_parser(
         "retry-failed",
         parents=[base_subparser],
-        help="""
-            Rerun the models that failed or were skipped on the previous run.""",
+        help="""Rerun the models that failed or were skipped on the previous run.""",
     )
 
     retry_failed_sub.set_defaults(
@@ -215,6 +216,10 @@ def handle(args):
     if parsed.command in ("show_upstream", "show_downstream"):
         task = show_dependencies_task.ShowDependenciesTask(parsed)
         results = task.run(parsed)
+
+    if parsed.command == "find":
+        task = find_task.FindTask(parsed)
+        results = task.run()
 
     if parsed.command == "open":
         task = open_task.OpenTask(parsed)
