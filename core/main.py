@@ -118,7 +118,6 @@ def parse_args(args):
     )
     downstream_depencies_sub.add_argument("model_name")
 
-
     find_sub = subs.add_parser(
         "find",
         parents=[base_subparser],
@@ -170,7 +169,6 @@ def parse_args(args):
                 Open the compiled model wrapped in the appropriate DDL (i.e. CREATE
                 statements), from the target/run directory.""",
         )
-
 
     retry_failed_sub = subs.add_parser(
         "retry-failed",
