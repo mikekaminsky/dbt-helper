@@ -24,7 +24,8 @@ NOTE: dbt-helper may not work with dbt when dbt is installed via homebrew. We ar
   * Note: this command will not over-write existing `schema.yml` files. It will default to printing templates to the console, but you can create new files by using the `--write-files` flag.
 * `show_upstream`: Inspect the dbt graph and show the relations that are "upstream" from (i.e., the "parents" of) the selected relation. Print to the terminal.
 * `show_downstream`: The same as `show_upstream` but in the other direction -- show dependents 'downstream' from (i.e., the "children" of) the selected relation
-* `open`: Open the compiled `.sql` file for a model by providing the model name only. You can also open the source or run `.sql` files for a model by using the appropriate flag. Useful when working in large dbt projects and you want to open files quickly wihout having to navigate a file tree.
+* `find`: Find the compiled `.sql` file for a model by providing the model name only. You can also find the source or run `.sql` files for a model by using the appropriate flag. Useful when working in large dbt projects and you want to find files quickly wihout having to navigate a file tree.
+* `open`: Open the compiled `.sql` file for a model by providing the model name only. Works the same as find, but directly opens the file in your text editor.
 * `retry-failed`: Rerun models that errored or were skipped on your previous dbt run.
 
 As one might hope, you can view the command line options directly from the tool by using the help functionality:
@@ -86,6 +87,34 @@ $ dbt-helper show_upstream d
 --------------------------------------------------------------------------------
 ```
 
+
+#### `find`
+
+```bash
+# Find the compiled version of model
+$ dbt-helper find my_model
+
+# Same as above
+$ dbt-helper find my_model --compiled
+
+# Find the run version of the model
+$ dbt-helper find my_model --run
+
+# Find the source version of the model
+$ dbt-helper find my_model --source
+```
+
+Understanding the flags:
+* The `--compiled` flag will find the relevant `.sql` file in the
+`target/compiled` directory. This file contains the compiled `SELECT` query.
+* The `--run` flag will find the relevant `.sql` file in the `target/run`
+directory. The `run` version of the model contains the compiled query wrapped
+in the DDL (i.e. `CREATE`) statements to materialize it in the warehouse.
+* The `--source` flag will find the relevant jinja-flavored `.sql` file in the
+`models/` directory.
+
+Without a flag, dbt-helper will find the `compiled` model.
+
 #### `open`
 
 ```bash
@@ -101,17 +130,12 @@ $ dbt-helper open my_model --run
 # Open the source version of the model
 $ dbt-helper open my_model --source
 
-```
-Understanding the flags:
-* The `--compiled` flag will open the relevant `.sql` file in the
-`target/compiled` directory. This file contains the compiled `SELECT` query.
-* The `--run` flag will open the relevant `.sql` file in the `target/run`
-directory. The `run` version of the model contains the compiled query wrapped
-in the DDL (i.e. `CREATE`) statements to materialize it in the warehouse.
-* The `--source` flag will open the relevant jinja-flavored `.sql` file in the
-`models/` directory.
+# Print model to STDOUT rather than opening in a text editor
+$ dbt-helper open my_model --print
 
-Without a flag, dbt-helper will open the `compiled` model.
+```
+
+These flags work exactly the same was `find` above, so check there for more detail on these.
 
 **If dbt-helper is opening your file in the wrong text editor**, update your
 `$EDITOR` environment variable to be the command you normally use to open a file
