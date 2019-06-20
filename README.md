@@ -4,7 +4,7 @@ NOTE: `dbt-helper` is still in extremely-limited beta release. We'd love your he
 
 `dbt-helper` is a command line tool that helps with developing [`dbt`](https://www.getdbt.com/) projects and managing data warehouses.
 
-This repository is **not** formally associated with dbt and is not maintained by fishtown-analytics (the maintainers of dbt). If you have problems with one of these tools, please file an issue on this repository and do not bother the dbt maintainers about it.
+This repository is **not** formally associated with dbt and is not maintained by fishtown-analytics (the maintainers of dbt). If you have problems with one of these `dbt-helper` tools, please file an issue on _this_ repository and do not bother the dbt maintainers about it.
 
 ## Installation
 
@@ -16,7 +16,7 @@ NOTE: dbt-helper may not work with dbt when dbt is installed via homebrew. We ar
 
 ## Usage
 
-`dbt-helper` (currently) has five sub-commands:
+`dbt-helper` (currently) has seven sub-commands:
 
 * `compare`: Compare the relations in your warehouse with those that dbt is managing. This is useful for identifying "stale" relations that are no longer being updated by dbt (like if, for example, you converted the model from materialized to ephemeral).
   * Note: `dbt-helper compare` will compare all schemas that are impacted by models in the `models/` directory. There is (currently) no way to specify a single schema to compare.
@@ -33,6 +33,8 @@ As one might hope, you can view the command line options directly from the tool 
 ```bash
 dbt-helper --help
 ```
+
+### Usage Details:
 
 #### `compare`
 
@@ -87,6 +89,8 @@ $ dbt-helper show_upstream d
 --------------------------------------------------------------------------------
 ```
 
+#### `show_downstream`
+_see `show_upstream`_
 
 #### `find`
 
@@ -104,7 +108,8 @@ $ dbt-helper find my_model --run
 $ dbt-helper find my_model --source
 ```
 
-Understanding the flags:
+**Understanding the flags:**
+
 * The `--compiled` flag will find the relevant `.sql` file in the
 `target/compiled` directory. This file contains the compiled `SELECT` query.
 * The `--run` flag will find the relevant `.sql` file in the `target/run`
