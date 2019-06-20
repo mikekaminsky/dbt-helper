@@ -4,7 +4,7 @@ NOTE: `dbt-helper` is still in extremely-limited beta release. We'd love your he
 
 `dbt-helper` is a command line tool that helps with developing [`dbt`](https://www.getdbt.com/) projects and managing data warehouses.
 
-This repository is **not** formally associated with dbt and is not maintained by fishtown-analytics (the maintainers of dbt). If you have problems with one of these `dbt-helper` tools, please file an issue on _this_ repository and do not bother the dbt maintainers about it.
+This repository is **not** formally associated with dbt and is not maintained by fishtown-analytics (the maintainers of dbt). If you have problems with one of these (`dbt-helper`) tools, please file an issue on _this_ repository and do not bother the dbt maintainers about it.
 
 ## Installation
 
