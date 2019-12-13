@@ -180,7 +180,7 @@ Found 8 models, 20 tests, 0 archives, 0 analyses, 113 macros, 0 operations, 3 se
 Install locally for development:
 
 ```
-pip install . -e
+pip install -e .
 ```
 
 ### Conventions
