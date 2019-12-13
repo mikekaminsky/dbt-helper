@@ -8,3 +8,5 @@ target/
 build/
 dist/
 /dbt_project.yml
+.vscode
+.mypy_cache
