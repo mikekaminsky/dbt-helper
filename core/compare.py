@@ -3,9 +3,20 @@ import dbt.adapters.factory
 from dbt.node_types import NodeType
 
 import dbt.perf_utils
-import dbt.ui
-from dbt.logger import GLOBAL_LOGGER as logger
+import utils.ui
+import logging
+import sys
 
+DEBUG = logging.DEBUG
+NOTICE = 15
+
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setFormatter(logging.Formatter('%(message)s'))
+stdout_handler.setLevel(NOTICE)
+
+logger = logging.getLogger('dbt')		
+logger.addHandler(stdout_handler)		
+logger.setLevel(DEBUG)
 
 class CompareTask:
     def __init__(self, args):
@@ -64,14 +75,14 @@ class CompareTask:
 
         if len(problems) == 0:
             logger.info(
-                dbt.ui.printer.green(
+                utils.ui.green(
                     "All clear! There are no relations in the checked schemas in the database"
                     "that are not defined in dbt models."
                 )
             )
         else:
             logger.info(
-                dbt.ui.printer.yellow(
+                utils.ui.yellow(
                     "Warning: The following relations do not match any models "
                     "found in this project:"
                 )
