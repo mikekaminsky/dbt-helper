@@ -5,8 +5,8 @@ from dbt.config import RuntimeConfig
 import dbt.adapters.factory
 
 import dbt.perf_utils
-import dbt.ui
-from dbt.logger import GLOBAL_LOGGER as logger
+import utils.ui
+from utils.logging import logger
 from dbt.task.generate import (
     format_stats, Catalog, CatalogResults
 )
@@ -44,7 +44,7 @@ class BootstrapTask:
     def write_relation(self, design_file_path, yml):
         if os.path.isfile(design_file_path):
             logger.info(
-                dbt.ui.printer.yellow(
+                utils.ui.yellow(
                     "Warning: File {} already exists. Skipping".format(design_file_path)
                 )
             )
@@ -117,7 +117,7 @@ class BootstrapTask:
 
         if len(relations_to_design) == 0:
             logger.info(
-                dbt.ui.printer.yellow(
+                utils.ui.yellow(
                     "Warning: No relations found in selected schemas: {}."
                     "\nAborting.".format(schemas)
                 )
