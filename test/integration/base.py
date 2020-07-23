@@ -1,5 +1,5 @@
 import unittest
-from dbt.adapters.factory import get_adapter
+from dbt.adapters.factory import get_adapter, register_adapter
 from dbt.config import RuntimeConfig
 from dbt.main import handle_and_check
 import sys
@@ -16,6 +16,7 @@ class TestArgs(object):
         self.which = "run"
         self.single_threaded = False
         self.profiles_dir = os.getcwd()
+        self.project_dir = os.getcwd()
         self.__dict__.update(kwargs)
 
 
@@ -138,7 +139,9 @@ class DBTIntegrationTest(unittest.TestCase):
 
         config = RuntimeConfig.from_args(TestArgs(kwargs))
 
+        register_adapter(config)
         adapter = get_adapter(config)
+        self.adapter_type = adapter.type()
         adapter.cleanup_connections()
         self.connection = adapter.acquire_connection("__test")
         self.adapter_type = self.connection.type
