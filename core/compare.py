@@ -6,6 +6,7 @@ import dbt.perf_utils
 import utils.ui
 from utils.logging import logger
 
+
 class CompareTask:
     def __init__(self, args):
         self.args = args

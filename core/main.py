@@ -46,8 +46,7 @@ def parse_args(args):
         ),
     )
     base_subparser.add_argument(
-        "--project-dir",
-        help="Project directory specification",
+        "--project-dir", help="Project directory specification",
     )
     base_subparser.add_argument(
         "--profile",
@@ -64,10 +63,7 @@ def parse_args(args):
         help="Which target to load for the given profile",
     )
     base_subparser.add_argument(
-        "--single-threaded",
-        default=False,
-        type=str,
-        help="Single Threaded Flag",
+        "--single-threaded", default=False, type=str, help="Single Threaded Flag",
     )
 
     subs = p.add_subparsers(title="Available sub-commands", dest="command")

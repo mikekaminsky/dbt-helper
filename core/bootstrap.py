@@ -7,9 +7,7 @@ import dbt.adapters.factory
 import dbt.perf_utils
 import utils.ui
 from utils.logging import logger
-from dbt.task.generate import (
-    format_stats, Catalog, CatalogResults
-)
+from dbt.task.generate import format_stats, Catalog, CatalogResults
 from jinja2 import Template
 
 
@@ -80,12 +78,9 @@ class BootstrapTask:
         """Ported from https://github.com/fishtown-analytics/dbt/blob/dev/octavius-catto/test/unit/test_docs_generate.py"""
         nodes, sources = Catalog(columns).make_unique_id_map(manifest)
         result = CatalogResults(
-            nodes=nodes,
-            sources=sources,
-            generated_at=datetime.utcnow(),
-            errors=None,
+            nodes=nodes, sources=sources, generated_at=datetime.utcnow(), errors=None,
         )
-        return result.to_dict(omit_none=False)['nodes']
+        return result.to_dict(omit_none=False)["nodes"]
 
     def run(self):
         single_file = self.args.single_file
@@ -127,7 +122,7 @@ class BootstrapTask:
         for table_id, relations in relations_to_design.items():
             all_models = []
 
-            schema = relations['metadata']['schema']
+            schema = relations["metadata"]["schema"]
             schema_path = os.path.join(self.config.source_paths[0], schema)
             if not write_files:
                 pass
@@ -136,7 +131,7 @@ class BootstrapTask:
             else:
                 os.mkdir(schema_path)
 
-            relation = relations['metadata']['name']
+            relation = relations["metadata"]["name"]
 
             relation_dict = self.prep_metadata(relations)
             all_models.append(relation_dict)
@@ -144,9 +139,7 @@ class BootstrapTask:
             if not single_file:
                 if not write_files:
                     logger.info("-" * 20)
-                    logger.info(
-                        "Design for relation: {}.{}".format(schema, relation)
-                    )
+                    logger.info("Design for relation: {}.{}".format(schema, relation))
                     logger.info("-" * 20)
                     yml = self.render_relations([relation_dict])
                     self.print_relation(yml)
