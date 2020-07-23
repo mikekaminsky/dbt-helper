@@ -1,7 +1,8 @@
 import networkx as nx
 import dbt.perf_utils
 from dbt.config import RuntimeConfig
-from dbt.logger import GLOBAL_LOGGER as logger
+import utils.ui
+from utils.logging import logger
 
 
 class ShowDependenciesTask:
@@ -15,11 +16,11 @@ class ShowDependenciesTask:
             raise
         self.config = RuntimeConfig.from_args(args)
         self.model_path = self.config.source_paths[0]
-        
+
         dbt.adapters.factory.register_adapter(self.config)
         adapter = dbt.adapters.factory.get_adapter(self.config)
         self.adapter_type = adapter.type()
-        
+
         self.manifest = self._get_manifest()
 
     def _get_manifest(self):
@@ -89,7 +90,7 @@ class ShowDependenciesTask:
         for name, node in self.manifest.nodes.items():
             d = {}
             d["name"] = name
-            if node.resource_type != 'test':
+            if node.resource_type != "test":
                 mat = node.config["materialized"]
                 if len(node.fqn) == 3:
                     schema = node.fqn[1]
@@ -109,7 +110,7 @@ class ShowDependenciesTask:
         for unique_id, source in self.manifest.sources.items():
             d = {}
             d["name"] = unique_id
-            mat = 'source'
+            mat = "source"
             schema = source.schema
             alias = source.name
             parents = []
@@ -160,7 +161,7 @@ class ShowDependenciesTask:
         dbt_name = self.dereference_model_name(self.args.model_name)
         if not dbt_name:
             logger.info(
-                dbt.ui.printer.yellow(
+                utils.ui.yellow(
                     "Warning: The model argument {} does not match any models "
                     "found in this project:".format(self.args.model_name)
                 )
