@@ -4,19 +4,7 @@ from dbt.node_types import NodeType
 
 import dbt.perf_utils
 import utils.ui
-import logging
-import sys
-
-DEBUG = logging.DEBUG
-NOTICE = 15
-
-stdout_handler = logging.StreamHandler(sys.stdout)
-stdout_handler.setFormatter(logging.Formatter('%(message)s'))
-stdout_handler.setLevel(NOTICE)
-
-logger = logging.getLogger('dbt')		
-logger.addHandler(stdout_handler)		
-logger.setLevel(DEBUG)
+from utils.logging import logger
 
 class CompareTask:
     def __init__(self, args):
