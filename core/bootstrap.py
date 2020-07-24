@@ -7,7 +7,7 @@ import dbt.adapters.factory
 import dbt.perf_utils
 import utils.ui
 from utils.logging import logger
-from dbt.task.generate import format_stats, Catalog, CatalogResults
+from dbt.task.generate import Catalog, CatalogResults
 from jinja2 import Template
 
 
@@ -75,7 +75,10 @@ class BootstrapTask:
         return model
 
     def generate_catalog_dict(self, manifest, columns):
-        """Ported from https://github.com/fishtown-analytics/dbt/blob/dev/octavius-catto/test/unit/test_docs_generate.py"""
+        """
+        Ported from
+        https://github.com/fishtown-analytics/dbt/blob/dev/octavius-catto/test/unit/test_docs_generate.py
+        """
         nodes, sources = Catalog(columns).make_unique_id_map(manifest)
         result = CatalogResults(
             nodes=nodes, sources=sources, generated_at=datetime.utcnow(), errors=None,
