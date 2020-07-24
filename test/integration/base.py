@@ -2,6 +2,7 @@ import unittest
 from dbt.adapters.factory import get_adapter, register_adapter
 from dbt.config import RuntimeConfig
 from dbt.main import handle_and_check
+from dbt.logger import log_manager
 import sys
 import os
 import yaml
@@ -201,6 +202,8 @@ class DBTIntegrationTest(unittest.TestCase):
     def run_dbt(self, args):
         if args is None:
             args = ["run"]
+        
+        log_manager.reset_handlers()
 
         args.extend(["--profiles-dir", self.dbt_config_dir])
 
