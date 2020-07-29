@@ -39,6 +39,6 @@ setup(
     test_suite="test",
     entry_points={"console_scripts": ["dbt-helper = core.main:main"]},
     scripts=[],
-    install_requires=["dbt>=0.17.0"],
+    install_requires=["dbt>=0.17.1"],
     cmdclass={"verify": VerifyVersionCommand},
 )
