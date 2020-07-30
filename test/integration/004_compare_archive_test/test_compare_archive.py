@@ -1,36 +1,21 @@
 from test.integration.base import DBTIntegrationTest
+import os
 
 
 class CompareTest(DBTIntegrationTest):
     @property
     def project_config(self):
-        source_table = "seed"
-
         return {
-            "archive": [
-                {
-                    "source_schema": self.test_schema_name,
-                    "target_schema": self.test_schema_name,
-                    "tables": [
-                        {
-                            "source_table": source_table,
-                            "target_table": "archive_actual",
-                            "updated_at": '"updated_at"',
-                            "unique_key": '''"id" || '-' || "first_name"''',
-                        }
-                    ],
-                }
-            ]
+            "config-version": 2,
+            "data-paths": [os.path.relpath(self.test_path + "/data", self.dbt_config_dir)],
+            "snapshot-paths": [os.path.relpath(self.test_path + "/snapshots", self.dbt_config_dir)],
+            "snapshots": {"+target_schema": self.test_schema_name},
         }
 
     def test_compare_archive(self):
 
-        with open("test/integration/004_compare_archive_test/seed.sql", "r") as f:
-            seed = f.read()
-
-        self.run_sql("CREATE SCHEMA IF NOT EXISTS {}".format(self.test_schema_name))
-        self.run_sql(seed.format(schema=self.test_schema_name))
-        self.run_dbt(["archive"])
+        self.run_dbt(["seed"])
+        self.run_dbt(["snapshot"])
         results = self.run_dbthelper(["compare"])
         table_names = [x.table for x in results]
-        self.assertFalse("archive_actual" in table_names)
+        self.assertFalse("seed_snapshot" in table_names)
