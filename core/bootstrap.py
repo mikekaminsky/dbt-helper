@@ -1,12 +1,13 @@
 import os
+from datetime import datetime
 
 from dbt.config import RuntimeConfig
 import dbt.adapters.factory
 
-import dbt.loader
-import dbt.ui
-from dbt.logger import GLOBAL_LOGGER as logger
-from dbt.task.generate import unflatten
+import dbt.perf_utils
+import utils.ui
+from utils.logging import logger
+from dbt.task.generate import Catalog, CatalogResults
 from jinja2 import Template
 
 
@@ -32,7 +33,7 @@ class BootstrapTask:
         self.config = RuntimeConfig.from_args(args)
 
     def _get_manifest(self):
-        manifest = dbt.loader.GraphLoader.load_all(self.config)
+        manifest = dbt.perf_utils.get_full_manifest(self.config)
         return manifest
 
     def render_relations(self, models):
@@ -41,7 +42,7 @@ class BootstrapTask:
     def write_relation(self, design_file_path, yml):
         if os.path.isfile(design_file_path):
             logger.info(
-                dbt.ui.printer.yellow(
+                utils.ui.yellow(
                     "Warning: File {} already exists. Skipping".format(design_file_path)
                 )
             )
@@ -73,6 +74,17 @@ class BootstrapTask:
 
         return model
 
+    def generate_catalog_dict(self, manifest, columns):
+        """
+        Ported from
+        https://github.com/fishtown-analytics/dbt/blob/dev/octavius-catto/test/unit/test_docs_generate.py
+        """
+        nodes, sources = Catalog(columns).make_unique_id_map(manifest)
+        result = CatalogResults(
+            nodes=nodes, sources=sources, generated_at=datetime.utcnow(), errors=None,
+        )
+        return result.to_dict(omit_none=False)["nodes"]
+
     def run(self):
         single_file = self.args.single_file
         write_files = self.args.write_files
@@ -83,9 +95,12 @@ class BootstrapTask:
             logger.info("- {}".format(schema))
 
         # Look up all of the relations in the DB
-        manifest = self._get_manifest()
+        dbt.adapters.factory.register_adapter(self.config)
         adapter = dbt.adapters.factory.get_adapter(self.config)
-        all_relations = adapter.get_catalog(manifest)
+        self.adapter_type = adapter.type()
+        self.adapter = adapter
+        manifest = self._get_manifest()
+        all_relations, exceptions = adapter.get_catalog(manifest)
 
         selected_relations = all_relations.where(
             lambda row: row["table_schema"] in schemas
@@ -96,18 +111,21 @@ class BootstrapTask:
             for row in selected_relations
         ]
 
-        relations_to_design = unflatten(zipped_relations)
+        relations_to_design = self.generate_catalog_dict(manifest, zipped_relations)
 
         if len(relations_to_design) == 0:
             logger.info(
-                dbt.ui.printer.yellow(
+                utils.ui.yellow(
                     "Warning: No relations found in selected schemas: {}."
                     "\nAborting.".format(schemas)
                 )
             )
             return {}
 
-        for schema, relations in relations_to_design.items():
+        for table_id, relations in relations_to_design.items():
+            all_models = []
+
+            schema = relations["metadata"]["schema"]
             schema_path = os.path.join(self.config.source_paths[0], schema)
             if not write_files:
                 pass
@@ -116,27 +134,23 @@ class BootstrapTask:
             else:
                 os.mkdir(schema_path)
 
-            all_models = []
+            relation = relations["metadata"]["name"]
 
-            for relation, meta_data in relations.items():
+            relation_dict = self.prep_metadata(relations)
+            all_models.append(relation_dict)
 
-                relation_dict = self.prep_metadata(meta_data)
-                all_models.append(relation_dict)
-
-                if not single_file:
-                    if not write_files:
-                        logger.info("-" * 20)
-                        logger.info(
-                            "Design for relation: {}.{}".format(schema, relation)
-                        )
-                        logger.info("-" * 20)
-                        yml = self.render_relations([relation_dict])
-                        self.print_relation(yml)
-                    else:
-                        design_file_name = "{}.yml".format(relation)
-                        design_file_path = os.path.join(schema_path, design_file_name)
-                        yml = self.render_relations([relation_dict])
-                        self.write_relation(design_file_path, yml)
+            if not single_file:
+                if not write_files:
+                    logger.info("-" * 20)
+                    logger.info("Design for relation: {}.{}".format(schema, relation))
+                    logger.info("-" * 20)
+                    yml = self.render_relations([relation_dict])
+                    self.print_relation(yml)
+                else:
+                    design_file_name = "{}.yml".format(relation)
+                    design_file_path = os.path.join(schema_path, design_file_name)
+                    yml = self.render_relations([relation_dict])
+                    self.write_relation(design_file_path, yml)
 
             if single_file:
                 if not write_files:

@@ -1,7 +1,8 @@
 import unittest
-from dbt.adapters.factory import get_adapter
+from dbt.adapters.factory import get_adapter, register_adapter
 from dbt.config import RuntimeConfig
 from dbt.main import handle_and_check
+from dbt.logger import log_manager
 import sys
 import os
 import yaml
@@ -16,12 +17,15 @@ class TestArgs(object):
         self.which = "run"
         self.single_threaded = False
         self.profiles_dir = os.getcwd()
+        self.project_dir = None
         self.__dict__.update(kwargs)
 
 
 class DBTIntegrationTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(DBTIntegrationTest, self).__init__(*args, **kwargs)
+
+        self.run_dir = os.getcwd()
 
         self.test_schema_name = "my_test_schema"
         if IS_DOCKER:
@@ -31,7 +35,7 @@ class DBTIntegrationTest(unittest.TestCase):
                 )
             )
         else:
-            dbt_config_dir = os.getcwd()
+            dbt_config_dir = self.run_dir
 
         self.dbt_config_dir = dbt_config_dir
         self.dbt_profile = os.path.join(self.dbt_config_dir, "profiles.yml")
@@ -53,12 +57,14 @@ class DBTIntegrationTest(unittest.TestCase):
             os.remove("packages.yml")
         if os.path.exists("profiles.yml"):
             os.remove("profiles.yml")
-        if os.path.exists('dbt_modules'):
-            shutil.rmtree('dbt_modules')
+        if os.path.exists("dbt_modules"):
+            shutil.rmtree("dbt_modules")
 
     @property
     def project_config(self):
-        return {}
+        return {
+            "config-version": 2,
+        }
 
     @property
     def packages_config(self):
@@ -73,6 +79,10 @@ class DBTIntegrationTest(unittest.TestCase):
     @property
     def models_path(self, dirname="models"):
         return os.path.join(self.test_path, dirname)
+
+    @property
+    def rel_models_path(self):
+        return os.path.relpath(self.models_path, self.run_dir)
 
     def postgres_profile(self):
 
@@ -126,7 +136,7 @@ class DBTIntegrationTest(unittest.TestCase):
 
     def set_packages(self):
         if self.packages_config is not None:
-            with open('packages.yml', 'w') as f:
+            with open("packages.yml", "w") as f:
                 yaml.safe_dump(self.packages_config, f, default_flow_style=True)
 
     def load_config(self):
@@ -138,7 +148,9 @@ class DBTIntegrationTest(unittest.TestCase):
 
         config = RuntimeConfig.from_args(TestArgs(kwargs))
 
+        register_adapter(config)
         adapter = get_adapter(config)
+        self.adapter_type = adapter.type()
         adapter.cleanup_connections()
         self.connection = adapter.acquire_connection("__test")
         self.adapter_type = self.connection.type
@@ -174,7 +186,7 @@ class DBTIntegrationTest(unittest.TestCase):
             "name": "test",
             "version": "1.0",
             "test-paths": [],
-            "source-paths": [self.models_path],
+            "source-paths": [self.rel_models_path],
             "profile": "test",
         }
 
@@ -198,6 +210,8 @@ class DBTIntegrationTest(unittest.TestCase):
     def run_dbt(self, args):
         if args is None:
             args = ["run"]
+
+        log_manager.reset_handlers()
 
         args.extend(["--profiles-dir", self.dbt_config_dir])
 

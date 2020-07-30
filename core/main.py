@@ -46,6 +46,9 @@ def parse_args(args):
         ),
     )
     base_subparser.add_argument(
+        "--project-dir", help="Project directory specification",
+    )
+    base_subparser.add_argument(
         "--profile",
         required=False,
         type=str,

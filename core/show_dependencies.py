@@ -1,7 +1,8 @@
 import networkx as nx
-import dbt.loader
+import dbt.perf_utils
 from dbt.config import RuntimeConfig
-from dbt.logger import GLOBAL_LOGGER as logger
+import utils.ui
+from utils.logging import logger
 
 
 class ShowDependenciesTask:
@@ -15,10 +16,15 @@ class ShowDependenciesTask:
             raise
         self.config = RuntimeConfig.from_args(args)
         self.model_path = self.config.source_paths[0]
+
+        dbt.adapters.factory.register_adapter(self.config)
+        adapter = dbt.adapters.factory.get_adapter(self.config)
+        self.adapter_type = adapter.type()
+
         self.manifest = self._get_manifest()
 
     def _get_manifest(self):
-        manifest = dbt.loader.GraphLoader.load_all(self.config)
+        manifest = dbt.perf_utils.get_full_manifest(self.config)
         return manifest
 
     # this traverses an arbitrary tree (parents or children) to get all ancestors or descendants
@@ -84,20 +90,30 @@ class ShowDependenciesTask:
         for name, node in self.manifest.nodes.items():
             d = {}
             d["name"] = name
-            if node['resource_type'] == 'source':
-                mat = 'source'
-                schema = node['schema']
-                alias = node['name']
-                parents = []
-            else:
+            if node.resource_type != "test":
                 mat = node.config["materialized"]
-                if len(node["fqn"]) == 3:
-                    schema = node["fqn"][1]
+                if len(node.fqn) == 3:
+                    schema = node.fqn[1]
                 else:
-                    schema = node["fqn"][0]
+                    schema = node.fqn[0]
 
-                alias = node["alias"]
-                parents = node["depends_on"]["nodes"]
+                alias = node.alias
+                parents = node.depends_on.nodes
+
+                d["type"] = mat
+                d["alias"] = "{}.{}".format(schema, alias)
+
+            # add the object name and type and direct parents to the dict
+            node_info_dict[d["name"]] = d
+            parent_dict[d["name"]] = parents
+
+        for unique_id, source in self.manifest.sources.items():
+            d = {}
+            d["name"] = unique_id
+            mat = "source"
+            schema = source.schema
+            alias = source.name
+            parents = []
 
             d["type"] = mat
             d["alias"] = "{}.{}".format(schema, alias)
@@ -145,7 +161,7 @@ class ShowDependenciesTask:
         dbt_name = self.dereference_model_name(self.args.model_name)
         if not dbt_name:
             logger.info(
-                dbt.ui.printer.yellow(
+                utils.ui.yellow(
                     "Warning: The model argument {} does not match any models "
                     "found in this project:".format(self.args.model_name)
                 )
@@ -166,7 +182,7 @@ class ShowDependenciesTask:
                 viz_dict[0] = [self.pretty_node_name(dbt_name)]
                 return
             if level in viz_dict:
-                viz_dict[level].append([self.pretty_node_name(current_node)])
+                viz_dict[level].append(self.pretty_node_name(current_node))
             else:
                 viz_dict[level] = [self.pretty_node_name(current_node)]
             if self.direction == "upstream":
