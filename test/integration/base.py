@@ -17,7 +17,7 @@ class TestArgs(object):
         self.which = "run"
         self.single_threaded = False
         self.profiles_dir = os.getcwd()
-        self.project_dir = os.getcwd()
+        self.project_dir = None
         self.__dict__.update(kwargs)
 
 
@@ -60,7 +60,9 @@ class DBTIntegrationTest(unittest.TestCase):
 
     @property
     def project_config(self):
-        return {}
+        return {
+             'config-version': 2,
+         }
 
     @property
     def packages_config(self):
@@ -75,6 +77,10 @@ class DBTIntegrationTest(unittest.TestCase):
     @property
     def models_path(self, dirname="models"):
         return os.path.join(self.test_path, dirname)
+
+    @property
+    def rel_models_path(self):
+        return os.path.relpath(self.models_path, self.dbt_config_dir)
 
     def postgres_profile(self):
 
@@ -178,7 +184,7 @@ class DBTIntegrationTest(unittest.TestCase):
             "name": "test",
             "version": "1.0",
             "test-paths": [],
-            "source-paths": [self.models_path],
+            "source-paths": [self.rel_models_path],
             "profile": "test",
         }
 
