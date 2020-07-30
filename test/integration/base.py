@@ -208,7 +208,7 @@ class DBTIntegrationTest(unittest.TestCase):
     def run_dbt(self, args):
         if args is None:
             args = ["run"]
-        
+
         log_manager.reset_handlers()
 
         args.extend(["--profiles-dir", self.dbt_config_dir])
