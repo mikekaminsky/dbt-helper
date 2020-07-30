@@ -25,6 +25,8 @@ class DBTIntegrationTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(DBTIntegrationTest, self).__init__(*args, **kwargs)
 
+        self.run_dir = os.getcwd()
+
         self.test_schema_name = "my_test_schema"
         if IS_DOCKER:
             dbt_config_dir = os.path.abspath(
@@ -33,7 +35,7 @@ class DBTIntegrationTest(unittest.TestCase):
                 )
             )
         else:
-            dbt_config_dir = os.getcwd()
+            dbt_config_dir = self.run_dir
 
         self.dbt_config_dir = dbt_config_dir
         self.dbt_profile = os.path.join(self.dbt_config_dir, "profiles.yml")
@@ -80,7 +82,7 @@ class DBTIntegrationTest(unittest.TestCase):
 
     @property
     def rel_models_path(self):
-        return os.path.relpath(self.models_path, self.dbt_config_dir)
+        return os.path.relpath(self.models_path, self.run_dir)
 
     def postgres_profile(self):
 
