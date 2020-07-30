@@ -62,9 +62,6 @@ def parse_args(args):
         type=str,
         help="Which target to load for the given profile",
     )
-    base_subparser.add_argument(
-        "--single-threaded", default=False, type=str, help="Single Threaded Flag",
-    )
 
     subs = p.add_subparsers(title="Available sub-commands", dest="command")
 
