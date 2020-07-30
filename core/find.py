@@ -53,7 +53,6 @@ class FindTask:
                 root_path = node["root_path"]
                 original_file_path = node["original_file_path"]
                 package_name = node["package_name"]
-                relative_path = node["original_file_path"]
 
                 file_names["source"] = os.path.join(root_path, original_file_path)
 
@@ -61,14 +60,14 @@ class FindTask:
                     self.target_path,
                     COMPILED_DIR,
                     package_name,
-                    relative_path,
+                    original_file_path
                 )
 
                 file_names["run"] = os.path.join(
                     self.target_path,
                     RUN_DIR,
                     package_name,
-                    relative_path
+                    original_file_path
                 )
 
         return file_names
