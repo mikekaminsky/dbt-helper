@@ -57,17 +57,11 @@ class FindTask:
                 file_names["source"] = os.path.join(root_path, original_file_path)
 
                 file_names["compiled"] = os.path.join(
-                    self.target_path,
-                    COMPILED_DIR,
-                    package_name,
-                    original_file_path
+                    self.target_path, COMPILED_DIR, package_name, original_file_path
                 )
 
                 file_names["run"] = os.path.join(
-                    self.target_path,
-                    RUN_DIR,
-                    package_name,
-                    original_file_path
+                    self.target_path, RUN_DIR, package_name, original_file_path
                 )
 
         return file_names

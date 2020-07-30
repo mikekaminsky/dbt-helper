@@ -57,14 +57,14 @@ class DBTIntegrationTest(unittest.TestCase):
             os.remove("packages.yml")
         if os.path.exists("profiles.yml"):
             os.remove("profiles.yml")
-        if os.path.exists('dbt_modules'):
-            shutil.rmtree('dbt_modules')
+        if os.path.exists("dbt_modules"):
+            shutil.rmtree("dbt_modules")
 
     @property
     def project_config(self):
         return {
-             'config-version': 2,
-         }
+            "config-version": 2,
+        }
 
     @property
     def packages_config(self):
@@ -136,7 +136,7 @@ class DBTIntegrationTest(unittest.TestCase):
 
     def set_packages(self):
         if self.packages_config is not None:
-            with open('packages.yml', 'w') as f:
+            with open("packages.yml", "w") as f:
                 yaml.safe_dump(self.packages_config, f, default_flow_style=True)
 
     def load_config(self):

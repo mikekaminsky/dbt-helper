@@ -7,8 +7,12 @@ class CompareTest(DBTIntegrationTest):
     def project_config(self):
         return {
             "config-version": 2,
-            "data-paths": [os.path.relpath(self.test_path + "/data", self.dbt_config_dir)],
-            "snapshot-paths": [os.path.relpath(self.test_path + "/snapshots", self.dbt_config_dir)],
+            "data-paths": [
+                os.path.relpath(self.test_path + "/data", self.dbt_config_dir)
+            ],
+            "snapshot-paths": [
+                os.path.relpath(self.test_path + "/snapshots", self.dbt_config_dir)
+            ],
             "snapshots": {"+target_schema": self.test_schema_name},
         }
 

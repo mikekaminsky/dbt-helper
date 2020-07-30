@@ -3,16 +3,16 @@ from typing import Dict
 import colorama
 
 COLORS: Dict[str, str] = {
-    'red': colorama.Fore.RED,
-    'green': colorama.Fore.GREEN,
-    'yellow': colorama.Fore.YELLOW,
-    'reset_all': colorama.Style.RESET_ALL
+    "red": colorama.Fore.RED,
+    "green": colorama.Fore.GREEN,
+    "yellow": colorama.Fore.YELLOW,
+    "reset_all": colorama.Style.RESET_ALL,
 }
 
-COLOR_FG_RED = COLORS['red']
-COLOR_FG_GREEN = COLORS['green']
-COLOR_FG_YELLOW = COLORS['yellow']
-COLOR_RESET_ALL = COLORS['reset_all']
+COLOR_FG_RED = COLORS["red"]
+COLOR_FG_GREEN = COLORS["green"]
+COLOR_FG_YELLOW = COLORS["yellow"]
+COLOR_RESET_ALL = COLORS["reset_all"]
 
 
 def color(text: str, color_code: str):
