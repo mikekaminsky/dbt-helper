@@ -32,11 +32,7 @@ class CompareTask:
                 schema_info = (node.database, node.schema)
                 schemas.update([schema_info])
                 node = node.to_dict()
-                is_refable = (
-                    node["resource_type"] in NodeType.refable()
-                    or node["resource_type"] == "archive"
-                )
-                # import pdb; pdb.set_trace()
+                is_refable = node["resource_type"] in NodeType.refable()
                 is_enabled = node["config"]["enabled"]
                 is_ephemeral = node["config"]["materialized"] == "ephemeral"
                 if is_refable and is_enabled and not is_ephemeral:
