@@ -25,6 +25,7 @@ def get_nearest_project_dir():
 
     return None
 
+
 def test_dbt_version():
     # Test if the dbt version is compatible with this version of dbt-helper
     installed_version = get_installed_version()
@@ -34,11 +35,14 @@ def test_dbt_version():
         dbt-helper requires dbt version 0.17.X or higher.
         You can find upgrade instructions here: 
         https://docs.getdbt.com/docs/installation
-    """.format(installed_version.to_version_string(skip_matcher=True))
+    """.format(
+        installed_version.to_version_string(skip_matcher=True)
+    )
 
     if int(get_installed_version().minor) < 17:
         print(VERSION_INCOMPATIBILITY_MSG)
         sys.exit(1)
+
 
 def parse_args(args):
 
