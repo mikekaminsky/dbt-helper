@@ -10,6 +10,7 @@ import core.find as find_task
 import core.retry_failed as retry_failed_task
 
 from dbt.config import PROFILES_DIR
+from dbt.version import get_installed_version
 
 
 def get_nearest_project_dir():
@@ -24,6 +25,20 @@ def get_nearest_project_dir():
 
     return None
 
+def test_dbt_version():
+    # Test if the dbt version is compatible with this version of dbt-helper
+    installed_version = get_installed_version()
+
+    VERSION_INCOMPATIBILITY_MSG = """
+        Installed dbt version: {}
+        dbt-helper requires dbt version 0.17.X or higher.
+        You can find upgrade instructions here: 
+        https://docs.getdbt.com/docs/installation
+    """.format(installed_version.to_version_string(skip_matcher=True))
+
+    if int(get_installed_version().minor) < 17:
+        print(VERSION_INCOMPATIBILITY_MSG)
+        sys.exit(1)
 
 def parse_args(args):
 
@@ -233,5 +248,7 @@ def handle(args):
 def main(args=None):
     if args is None:
         args = sys.argv[1:]
+
+    test_dbt_version()
 
     handle(args)
