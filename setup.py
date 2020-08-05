@@ -5,7 +5,7 @@ from setuptools.command.install import install
 
 
 package_name = "dbt-helper"
-VERSION = "0.4.0"
+VERSION = "0.4.1"
 description = """dbt-helper is a command line tool to help ease dbt development and database management"""
 
 
@@ -39,6 +39,6 @@ setup(
     test_suite="test",
     entry_points={"console_scripts": ["dbt-helper = core.main:main"]},
     scripts=[],
-    install_requires=["dbt>=0.17.1"],
+    install_requires=["dbt"],
     cmdclass={"verify": VerifyVersionCommand},
 )
