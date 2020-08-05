@@ -33,7 +33,7 @@ def test_dbt_version():
     VERSION_INCOMPATIBILITY_MSG = """
         Installed dbt version: {}
         dbt-helper requires dbt version 0.17.X or higher.
-        You can find upgrade instructions here: 
+        You can find upgrade instructions here:
         https://docs.getdbt.com/docs/installation
     """.format(
         installed_version.to_version_string(skip_matcher=True)
