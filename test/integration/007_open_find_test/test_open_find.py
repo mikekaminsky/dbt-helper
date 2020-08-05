@@ -37,11 +37,11 @@ class OpenFindTest(DBTIntegrationTest):
             code_type = "NA"
 
         if model_name == "my_model":
-            c_location = "test/"
+            c_location = "test/" + self.rel_models_path + "/"
         elif model_name == "my_package_model":
-            c_location = "local_dep/"
+            c_location = "local_dep/models/"
         elif model_name == "incremental":
-            c_location = "dbt_integration_project/"
+            c_location = "dbt_integration_project/models/"
 
         path = "target/compiled/" + c_location
 

@@ -2,10 +2,9 @@ from dbt.config import RuntimeConfig
 import dbt.adapters.factory
 from dbt.node_types import NodeType
 
-from dbt.utils import is_enabled as check_is_enabled
-import dbt.loader
-import dbt.ui
-from dbt.logger import GLOBAL_LOGGER as logger
+import dbt.perf_utils
+import utils.ui
+from utils.logging import logger
 
 
 class CompareTask:
@@ -14,28 +13,27 @@ class CompareTask:
         self.config = RuntimeConfig.from_args(args)
 
     def _get_manifest(self):
-        manifest = dbt.loader.GraphLoader.load_all(self.config)
+        manifest = dbt.perf_utils.get_full_manifest(self.config)
         return manifest
 
     def run(self):
 
         # Look up all of the relations in the DB
+        dbt.adapters.factory.register_adapter(self.config)
         adapter = dbt.adapters.factory.get_adapter(self.config)
+        self.adapter_type = adapter.type()
         manifest = self._get_manifest()
 
         schemas = set()
         model_relations = set()
         # Look up all of the relations dbt knows about
         for node in manifest.nodes.values():
-            if node["resource_type"] != "source":
-                schema_info = (node["database"], node["schema"])
+            if node.resource_type != "source":
+                schema_info = (node.database, node.schema)
                 schemas.update([schema_info])
                 node = node.to_dict()
-                is_refable = (
-                    node["resource_type"] in NodeType.refable()
-                    or node["resource_type"] == "archive"
-                )
-                is_enabled = check_is_enabled(node)
+                is_refable = node["resource_type"] in NodeType.refable()
+                is_enabled = node["config"]["enabled"]
                 is_ephemeral = node["config"]["materialized"] == "ephemeral"
                 if is_refable and is_enabled and not is_ephemeral:
                     rel = (node["schema"].lower(), node["alias"].lower())
@@ -62,14 +60,14 @@ class CompareTask:
 
         if len(problems) == 0:
             logger.info(
-                dbt.ui.printer.green(
+                utils.ui.green(
                     "All clear! There are no relations in the checked schemas in the database"
                     "that are not defined in dbt models."
                 )
             )
         else:
             logger.info(
-                dbt.ui.printer.yellow(
+                utils.ui.yellow(
                     "Warning: The following relations do not match any models "
                     "found in this project:"
                 )

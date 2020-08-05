@@ -29,7 +29,9 @@ class TestBootstrap(DBTIntegrationTest):
 
     def test_bootstrap_write(self):
         self.run_dbt(["run"])
-        self.run_dbthelper(["bootstrap", "--schemas", self.test_schema_name, "--write-files"])
+        self.run_dbthelper(
+            ["bootstrap", "--schemas", self.test_schema_name, "--write-files"]
+        )
 
         self.assertTrue(
             os.path.isfile(
