@@ -22,8 +22,8 @@ NOTE: dbt-helper may not work with dbt when dbt is installed via homebrew. We ar
   * Note: `dbt-helper compare` will compare all schemas that are impacted by models in the `models/` directory. There is (currently) no way to specify a single schema to compare.
 * `bootstrap`: Create starter "`schema.yml`" files for your project. This function helpfully generates boilerplate dbt-model files for you so you don't have to go through the copy/paste when you're developing a new model.
   * Note: this command will not over-write existing `schema.yml` files. It will default to printing templates to the console, but you can create new files by using the `--write-files` flag.
-* `show_upstream`: Inspect the dbt graph and show the relations that are "upstream" from (i.e., the "parents" of) the selected relation. Print to the terminal.
-* `show_downstream`: The same as `show_upstream` but in the other direction -- show dependents 'downstream' from (i.e., the "children" of) the selected relation
+* `show-upstream`: Inspect the dbt graph and show the relations that are "upstream" from (i.e., the "parents" of) the selected relation. Print to the terminal.
+* `show-downstream`: The same as `show-upstream` but in the other direction -- show dependents 'downstream' from (i.e., the "children" of) the selected relation
 * `find`: Find the compiled `.sql` file for a model by providing the model name only. You can also find the source or run `.sql` files for a model by using the appropriate flag. Useful when working in large dbt projects and you want to find files quickly wihout having to navigate a file tree.
 * `open`: Open the compiled `.sql` file for a model by providing the model name only. Works the same as find, but directly opens the file in your text editor.
 * `retry-failed`: Rerun models that errored or were skipped on your previous dbt run.
@@ -78,9 +78,9 @@ models:
   description: 'TODO: Replace me'
 ```
 
-#### `show_upstream`
+#### `show-upstream`
 ```bash
-$ dbt-helper show_upstream d
+$ dbt-helper show-upstream d
 
 --------------------------------------------------------------------------------
                                   downstream.d
@@ -89,8 +89,8 @@ $ dbt-helper show_upstream d
 --------------------------------------------------------------------------------
 ```
 
-#### `show_downstream`
-_see `show_upstream`_
+#### `show-downstream`
+_see `show-upstream`_
 
 #### `find`
 
