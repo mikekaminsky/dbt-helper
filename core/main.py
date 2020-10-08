@@ -68,7 +68,8 @@ def parse_args(args):
         ),
     )
     base_subparser.add_argument(
-        "--project-dir", help="Project directory specification",
+        "--project-dir",
+        help="Project directory specification",
     )
     base_subparser.add_argument(
         "--profile",
@@ -135,7 +136,7 @@ def parse_args(args):
 
     downstream_depencies_sub = subs.add_parser(
         "show-downstream",
-        aliases=['show_downstream'],
+        aliases=["show_downstream"],
         parents=[base_subparser],
         help="Show downstream dependencies for a model",
     )
@@ -236,16 +237,16 @@ def handle(args):
     if parsed.command == "compare":
         task = compare_task.CompareTask(parsed)
         results = task.run()
-    
+
     if parsed.command in ("show_upstream", "show_downstream"):
         logger.info(
-                utils.ui.yellow(
-                    "Deprecation Warning: \n"
-                    "show_upstream and show_downstream will be deprecated in \n"
-                    "a future version of dbt-helper in favor of the more \n"
-                    "consistent show-upstream and show-downstream syntax."
-                )
+            utils.ui.yellow(
+                "Deprecation Warning: \n"
+                "show_upstream and show_downstream will be deprecated in \n"
+                "a future version of dbt-helper in favor of the more \n"
+                "consistent show-upstream and show-downstream syntax."
             )
+        )
         if parsed.command == "show_upstream":
             parsed.command = "show-upstream"
         else:
