@@ -8,9 +8,9 @@ from utils.logging import logger
 class ShowDependenciesTask:
     def __init__(self, args):
         self.args = args
-        if self.args.command == "show_upstream":
+        if self.args.command == "show-upstream":
             self.direction = "upstream"
-        elif self.args.command == "show_downstream":
+        elif self.args.command == "show-downstream":
             self.direction = "downstream"
         else:
             raise

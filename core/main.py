@@ -9,6 +9,9 @@ import core.open as open_task
 import core.find as find_task
 import core.retry_failed as retry_failed_task
 
+import utils.ui
+from utils.logging import logger
+
 from dbt.config import PROFILES_DIR
 from dbt.version import get_installed_version
 
@@ -121,22 +124,23 @@ def parse_args(args):
     )
 
     upstream_depencies_sub = subs.add_parser(
-        "show_upstream",
+        "show-upstream",
         parents=[base_subparser],
         help="Show upstream dependencies for a model",
     )
     upstream_depencies_sub.set_defaults(
-        cls=show_dependencies_task.ShowDependenciesTask, which="show_upstream"
+        cls=show_dependencies_task.ShowDependenciesTask, which="show-upstream"
     )
     upstream_depencies_sub.add_argument("model_name")
 
     downstream_depencies_sub = subs.add_parser(
-        "show_downstream",
+        "show-downstream",
+        aliases=['show_downstream'],
         parents=[base_subparser],
         help="Show downstream dependencies for a model",
     )
     downstream_depencies_sub.set_defaults(
-        cls=show_dependencies_task.ShowDependenciesTask, which="show_downstream"
+        cls=show_dependencies_task.ShowDependenciesTask, which="show-downstream"
     )
     downstream_depencies_sub.add_argument("model_name")
 
@@ -232,8 +236,22 @@ def handle(args):
     if parsed.command == "compare":
         task = compare_task.CompareTask(parsed)
         results = task.run()
-
+    
     if parsed.command in ("show_upstream", "show_downstream"):
+        logger.info(
+                utils.ui.yellow(
+                    "Deprecation Warning: \n"
+                    "show_upstream and show_downstream will be deprecated in \n"
+                    "a future version of dbt-helper in favor of the more \n"
+                    "consistent show-upstream and show-downstream syntax."
+                )
+            )
+        if parsed.command == "show_upstream":
+            parsed.command = "show-upstream"
+        else:
+            parsed.command = "show-downstream"
+
+    if parsed.command in ("show-upstream", "show-downstream"):
         task = show_dependencies_task.ShowDependenciesTask(parsed)
         results = task.run(parsed)
 
