@@ -36,7 +36,7 @@ class FindTask:
             )
 
     def _get_model_files(self):
-        """ Return a dictionary of the form:
+        """Return a dictionary of the form:
         {
             'source': 'models/path/to/model',
             'compiled': 'target/compiled/path/to/model',

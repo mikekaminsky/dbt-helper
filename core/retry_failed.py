@@ -27,8 +27,7 @@ class RetryFailedTask:
             raise Exception("Could not find {} file.".format(RUN_RESULTS_FILE))
 
     def get_models_to_retry(self):
-        """ Return a list of errored and skipped models
-        """
+        """Return a list of errored and skipped models"""
         models = []
         for result in self.run_results.get("results"):
             if result["status"] == "ERROR" or result["skip"]:
@@ -36,7 +35,7 @@ class RetryFailedTask:
         return models
 
     def get_run_flags(self):
-        """ This is a janky function that takes the args and puts them back
+        """This is a janky function that takes the args and puts them back
         into a list of strings."""
         flags = []
         if self.args.profiles_dir:

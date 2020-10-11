@@ -81,7 +81,10 @@ class BootstrapTask:
         """
         nodes, sources = Catalog(columns).make_unique_id_map(manifest)
         result = CatalogResults(
-            nodes=nodes, sources=sources, generated_at=datetime.utcnow(), errors=None,
+            nodes=nodes,
+            sources=sources,
+            generated_at=datetime.utcnow(),
+            errors=None,
         )
         return result.to_dict(omit_none=False)["nodes"]
 
